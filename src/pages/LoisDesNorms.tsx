@@ -37,7 +37,7 @@ interface LoisDesNormsState {
   availablePlayers: any;
 }
 
-const ws = new WebSocket("ws://localhost:3001/");
+const ws = new WebSocket("ws://tools.bonjack.club:3001/");
 
 const LoisDesNorms = (props: LoisDesNormsProperties) => {
   const [tabState, setTabState] = useState<number>(0);

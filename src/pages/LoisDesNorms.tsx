@@ -17,7 +17,7 @@ interface LoisDesNormsState {
   availablePlayers: any;
 }
 
-const ws = new WebSocket("ws://tools.bonjack.club:3001/");
+const ws = new WebSocket("ws://localhost:3001/");
 
 const LoisDesNorms = (props: LoisDesNormsProperties) => {
   const [state, dispatch] = useReducer(
@@ -37,7 +37,7 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
         }
         case "updateState": {
           const newState = JSON.parse(message.content);
-          newState.availablePlayers[""] = undefined;
+          newState.availablePlayers[""] = { name: undefined, stat: {}};
           return newState;
         }
       }
@@ -109,7 +109,7 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
           <Lobby rollCount={state.rollCount} players={state.players} availablePlayers={state.availablePlayers} reset={reset} roll={roll} onPlayerChange={onPlayerChange} />
         </Grid>
         <Grid item>
-          <AdditionalInformationBlock />
+          <AdditionalInformationBlock availablePlayers={state.availablePlayers} />
         </Grid>
       </Grid>
     </Container>

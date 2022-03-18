@@ -15,7 +15,7 @@ export interface LobbyProperties {
   reset: (_: any) => void;
   roll: (_: any) => void;
   onPlayerChange: (event: SelectChangeEvent<string>, index: number) => void;
-}
+};
 
 const Lobby = (props: LobbyProperties) => {
   return (

@@ -3,7 +3,7 @@ import { useState } from "react";
 import Rules from "./Rules";
 import Stats from "./Stats";
 
-const AdditionalInformationBlock = () => {
+const AdditionalInformationBlock = (props: { availablePlayers: any}) => {
   const [state, setState] = useState(0);
 
   return (
@@ -18,7 +18,7 @@ const AdditionalInformationBlock = () => {
         <Tab id="stats" label="Stats" value={1} />
       </Tabs>
       <div hidden={state !== 1} style={{ height: 300, width: 400 }}>
-        <Stats />
+        <Stats availablePlayers={props.availablePlayers} />
       </div>
       <div hidden={state !== 0} style={{ height: 300, width: 400 }}>
         <Rules />

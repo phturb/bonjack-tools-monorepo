@@ -48,7 +48,7 @@ const PlayerInfo = (props: PlayerInfoProperties) => {
             {Object.entries(availablePlayers).map((value) => {
               return (
                 <MenuItem key={value[0] + "-select-item"} value={value[0]}>
-                  {value[1] as string}
+                  {(value[1] as any).name as string}
                 </MenuItem>
               );
             })}

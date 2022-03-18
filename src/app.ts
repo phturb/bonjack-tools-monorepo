@@ -101,7 +101,7 @@ const getPlayerStats = async (id: string) => {
     });
     const gamesLength = playerGames.map(x => x.roll.length);
     return { numberOfGame: gamesLength.length,
-             totalRoll: gamesLength.reduce((x, y) => x + y)
+             totalRoll: gamesLength.reduce((x, y,) => x + y, 0)
             };
 }
 

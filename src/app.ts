@@ -4,12 +4,15 @@ import cors from 'cors';
 import http from 'http';
 import { WebSocket, Server as WebSocketServer } from 'ws';
 import { Message } from './interfaces/message.interface';
-import 'dotenv/config';
+import { GameState } from './interfaces/gameState.interface';
+import GameManager from './gameManager';
+import { broadcast, send } from './helpers/ws.helpers';
+import { CHANNEL_ID, DISCORD_TOKEN, PORT } from './config/config';
+import DiscordManager from './discordManager';
+import { PrismaClient } from '@prisma/client'
 
 
-const PORT: number | string =  process.env.PORT || 3001;
-const DISCORD_TOKEN: string | undefined = process.env.DISCORD_TOKEN;
-const CHANNEL_ID: string = process.env.CHANNEL_ID || '212369829582077953';
+const prisma = new PrismaClient()
 
 if (!DISCORD_TOKEN) {
     console.error("Discord Token not defined ! Please defined DISCORD_TOKEN");
@@ -18,11 +21,27 @@ if (!DISCORD_TOKEN) {
 
 const app: Application = express();
 app.use(cors());
+
+app.get("/players", async (req: Request, res: Response) => {
+    const players = await prisma.player.findMany();
+    res.json(players);
+});
+
+app.get("/games", async (req: Request, res: Response) => {
+    const games = await prisma.game.findMany();
+    res.json(games);
+});
+
+
+app.get("/rolls", async (req: Request, res: Response) => {
+    const rolls = await prisma.roll.findMany();
+    res.json(rolls);
+});
+
+
+
 const server = http.createServer(app);
-
 const wsServer = new WebSocketServer({server});
-
-// DISCORD
 const discordClient = new DiscordClient({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES ]});
 
 discordClient.on('ready', () => {
@@ -31,34 +50,7 @@ discordClient.on('ready', () => {
 
 discordClient.login(DISCORD_TOKEN!);
 
-const broadcast = (content: any, sender?: WebSocket | undefined) => {
-    wsServer.clients.forEach(client => {
-        if ( sender || sender === client ) return;
-        client.send(JSON.stringify(content));
-    })
-} 
-
-const send = (content: any, receiver: WebSocket) => {
-    receiver.send(JSON.stringify(content));
-}
-
-const shuffleArray = (array: string[]) => {
-    for (let i = roles.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const temp = roles[i];
-      array[i] = array[j];
-      array[j] = temp;
-    }
-};
-
-let roles = ['ADC', 'MID', 'JUNGLE', 'SUPPORT', 'TOP'];
-
-let gameState: {
-    players: { player: { id: string, name: string | undefined}, role: string | undefined}[],
-    rollCount: number,
-    gameInProgress: boolean,
-    availablePlayers: any,
-} = {
+let gameState: GameState = {
     players: [
         { player: {id: '', name: undefined}, role: undefined},
         { player: {id: '', name: undefined}, role: undefined},
@@ -68,7 +60,49 @@ let gameState: {
     ],
     rollCount: 0,
     gameInProgress: false,
-    availablePlayers: {'' : undefined}
+    availablePlayers: {'' : undefined},
+    gameId: 0
+}
+
+const discordManager = new DiscordManager(discordClient);
+const gameManager = new GameManager(discordManager, server, wsServer);
+
+const getPlayerStats = async (id: string) => {
+    const playerGames = await prisma.game.findMany({
+        where : {OR : [{
+                player1Id : {
+                    equals: id
+                }
+            },
+            {
+                player2Id : {
+                    equals: id
+                }
+            },
+            {
+                player3Id : {
+                    equals: id
+                }
+            },
+            {
+                player4Id : {
+                    equals: id
+                }
+            },
+            {
+                player5Id : {
+                    equals: id
+                }
+            }],
+        },
+        include: {
+            roll: true
+        }
+    });
+    const gamesLength = playerGames.map(x => x.roll.length);
+    return { numberOfGame: gamesLength.length,
+             totalRoll: gamesLength.reduce((x, y) => x + y)
+            };
 }
 
 const verifyAndAdjustPlayers =(players: {player: {id: string, name : string | undefined}, role: string | undefined}[], availablePlayers: any) => {
@@ -90,12 +124,25 @@ const verifyAndAdjustPlayers =(players: {player: {id: string, name : string | un
 }
 
 const updatePlayerListFromDiscord = () => {
-    discordClient.channels.fetch(CHANNEL_ID).then((ch: AnyChannel | null) => {
+    discordClient.channels.fetch(CHANNEL_ID).then(async (ch: AnyChannel | null) => {
         if (!ch) return;
         let newAvailablePlayers: any = {'' : undefined};
         for(const [id, m] of (ch as VoiceChannel).members) {
             if(m.nickname) {
-                newAvailablePlayers[id] = m.nickname;
+                newAvailablePlayers[id] = { name: m.nickname, stats: await getPlayerStats(id)};
+            } else if (m.displayName) {
+                newAvailablePlayers[id] = { name: m.displayName, stats: await getPlayerStats(id)};
+            }
+            const dbPlayer = await prisma.player.findFirst({where: {
+                id: id
+            }});
+            if(!dbPlayer){
+                await prisma.player.create(
+                    {data: {
+                        id: id,
+                        name: newAvailablePlayers[id].name
+                    }}
+                );
             }
         }
         console.log("Available Player list updated : ", newAvailablePlayers);
@@ -108,20 +155,20 @@ const updatePlayerListFromDiscord = () => {
                     for(let i = 0; i < newPlayers.length; i++) {
                         if (newPlayers[i].player.id === '' || !newPlayers[i].player.id) {
                             newPlayers[i].player.id = ap[0];
-                            newPlayers[i].player.name = ap[1] as string;
+                            newPlayers[i].player.name = (ap[1] as any).name as string;
                             break;
                         }
                     }
                 }
             }
             gameState.players = newPlayers;
-            broadcast({ action: 'updateState', content: JSON.stringify(gameState) });
+            broadcast(wsServer, { action: 'updateState', content: JSON.stringify(gameState) });
         }
     });
 }
 
 wsServer.on('connection', (ws: WebSocket) => {
-    ws.on('message', (message: string) => {
+    ws.on('message', async (message: string) => {
         const parsedMessage: Message = JSON.parse(message);
         if(parsedMessage.action === 'updatePlayers') {
             const content: { id: string, name: string | undefined}[] = JSON.parse(parsedMessage.content);
@@ -131,21 +178,52 @@ wsServer.on('connection', (ws: WebSocket) => {
             } else {
                 verifyAndAdjustPlayers(processedPlayers, gameState.availablePlayers);
                 gameState.players = processedPlayers;
-                broadcast({ action: 'updateState', content: JSON.stringify(gameState) });
+                broadcast(wsServer, { action: 'updateState', content: JSON.stringify(gameState) });
             }
         }
         if ( parsedMessage.action === 'roll' ) {
             if (!gameState.gameInProgress) {
                 gameState.gameInProgress = true;
+                const currentGame = await prisma.game.create({
+                    data: {
+                        player_game_player1IdToplayer: gameState.players[0].player.id ? {
+                            connect: { id: gameState.players[0].player.id }
+                        } : undefined,
+                        player_game_player2IdToplayer: gameState.players[1].player.id ? {
+                            connect: { id: gameState.players[1].player.id }
+                        } : undefined,
+                        player_game_player3IdToplayer: gameState.players[2].player.id ? {
+                            connect: { id: gameState.players[2].player.id }
+                        } : undefined,
+                        player_game_player4IdToplayer: gameState.players[3].player.id ? {
+                            connect: { id: gameState.players[3].player.id }
+                        } : undefined,
+                        player_game_player5IdToplayer: gameState.players[4].player.id ? {
+                            connect: { id: gameState.players[4].player.id }
+                        } : undefined,
+                    }
+                });
+                gameState.gameId = currentGame.id;
                 console.log("Law has started!");
             }
             gameState.rollCount += 1;
             console.log(`Randomize Roles for the ${gameState.rollCount} time!`);
-            shuffleArray(roles);
+            gameManager.randomizeRoles();
             for(let i = 0; i < gameState.players.length; i++) {
-                gameState.players[i].role = roles[i];
+                gameState.players[i].role = gameManager.roles[i];
             }
-            broadcast({ action: 'updateState', content: JSON.stringify(gameState) });
+            await prisma.roll.create({
+                data: {
+                    gameId: gameState.gameId,
+                    rollNumber: gameState.rollCount,
+                    player1Roll: gameState.players[0].role ?? null,
+                    player2Roll: gameState.players[1].role ?? null,
+                    player3Roll: gameState.players[2].role ?? null,
+                    player4Roll: gameState.players[3].role ?? null,
+                    player5Roll: gameState.players[4].role ?? null,
+                }
+            })
+            broadcast(wsServer, { action: 'updateState', content: JSON.stringify(gameState) });
         }
         if ( parsedMessage.action === 'reset' ) {
             console.log("Reset game!")
@@ -155,7 +233,7 @@ wsServer.on('connection', (ws: WebSocket) => {
                 gameState.players[i].role = undefined;
             }
             updatePlayerListFromDiscord();
-            broadcast({ action: 'updateState', content: JSON.stringify(gameState) });
+            broadcast(wsServer, { action: 'updateState', content: JSON.stringify(gameState) });
         }
 
         if ( parsedMessage.action === 'refreshDiscord' ) {
@@ -176,7 +254,6 @@ discordClient.on('voiceStateUpdate', (oldState: VoiceState, newState: VoiceState
 discordClient.login(DISCORD_TOKEN!).then(() => {
     updatePlayerListFromDiscord();
 })
-
 
 server.listen(PORT, function() {
     console.log(`Server is running on port ${PORT}`);

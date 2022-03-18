@@ -29,6 +29,7 @@ const Lobby = (props: LobbyProperties) => {
         {props.players.map((player: Player, index: number) => {
           return (
             <PlayerInfo
+              key={`player-info-${index}`}
               index={index}
               availablePlayers={props.availablePlayers}
               playerId={player.player.id}

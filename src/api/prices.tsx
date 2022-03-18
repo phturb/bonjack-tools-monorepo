@@ -9,4 +9,4 @@ export interface Prices {
         lunaGasPrice: number
     }
 
-export const getPrices = (): Promise<Prices[]> => axios.get<Prices[]>("http://tools.bonjack.club/api/prices").then((res) => res.data);
+export const getPrices = (): Promise<Prices[]> => axios.get<Prices[]>(`${process.env.REACT_APP_HTTP_ENDPOINT || 'http://tools.bonjack.club/api'}/prices`).then((res) => res.data);

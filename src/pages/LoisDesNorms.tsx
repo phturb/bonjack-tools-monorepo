@@ -17,7 +17,7 @@ interface LoisDesNormsState {
   availablePlayers: any;
 }
 
-const ws = new WebSocket("ws://tools.bonjack.club:3001/");
+const ws = new WebSocket(process.env.REACT_APP_WEBSOCKET_ENDPOINT || "ws://localhost:3001/");
 
 const LoisDesNorms = (props: LoisDesNormsProperties) => {
   const [state, dispatch] = useReducer(

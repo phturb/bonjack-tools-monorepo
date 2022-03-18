@@ -13,4 +13,4 @@ export interface Tx {
     cointTypeOut: string
 }
 
-export const getTxs = (): Promise<Tx[]> => axios.get<Tx[]>("http://tools.bonjack.club/api/txs").then((res) => res.data);
+export const getTxs = (): Promise<Tx[]> => axios.get<Tx[]>(`${process.env.REACT_APP_HTTP_ENDPOINT || 'http://tools.bonjack.club/api'}/txs`).then((res) => res.data);

@@ -1,9 +1,5 @@
-import {
-  Container,
-  Grid,
-  SelectChangeEvent,
-} from "@mui/material";
-import { useEffect, useReducer } from "react";
+import { Container, Grid, SelectChangeEvent } from "@mui/material";
+import { useEffect, useReducer, useState } from "react";
 import { MessageActions, Player } from "../helpers/loisDesNorms";
 import AdditionalInformationBlock from "../components/LoisDesNorms/AdditionalInformationBlock";
 import Lobby from "../components/LoisDesNorms/Lobby";
@@ -17,17 +13,41 @@ interface LoisDesNormsState {
   availablePlayers: any;
 }
 
-const ws = new WebSocket(process.env.REACT_APP_WEBSOCKET_ENDPOINT || "ws://localhost:3001/");
-
 const LoisDesNorms = (props: LoisDesNormsProperties) => {
+  const [wsState, setWsState] = useState<{ ws: WebSocket | undefined }>({
+    ws: undefined,
+  });
+
+  useEffect(() => {
+    const ws = new WebSocket(
+      process.env.REACT_APP_WEBSOCKET_ENDPOINT || "ws://localhost:3001/"
+    );
+
+    ws.onmessage = function (event) {
+      const msg = JSON.parse(event.data);
+      if (msg.action) {
+        dispatch(msg);
+      }
+    };
+
+    const newState = {
+      ws: ws,
+    };
+
+    setWsState(newState);
+  }, []);
+
   const [state, dispatch] = useReducer(
-    (state: LoisDesNormsState, message: { action: MessageActions; content: any }) => {
+    (
+      state: LoisDesNormsState,
+      message: { action: MessageActions; content: any }
+    ) => {
       switch (message.action) {
         case "updatePlayers": {
           const newPlayers = message.content;
           const newState = { ...state, players: newPlayers };
           const players = newPlayers.map((x: Player) => x.player);
-          ws.send(
+          wsState.ws?.send(
             JSON.stringify({
               action: "updatePlayers",
               content: JSON.stringify(players),
@@ -37,7 +57,7 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
         }
         case "updateState": {
           const newState = JSON.parse(message.content);
-          newState.availablePlayers[""] = { name: undefined, stat: {}};
+          newState.availablePlayers[""] = { name: undefined, stat: {} };
           return newState;
         }
       }
@@ -56,21 +76,13 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
       availablePlayers: [{ id: undefined, name: undefined }],
     }
   );
-  useEffect(() => {
-    ws.onmessage = function (event) {
-      const msg = JSON.parse(event.data);
-      if (msg.action) {
-        dispatch(msg);
-      }
-    };
-  }, []);
 
   const reset = (_: any) => {
-    ws.send(JSON.stringify({ action: "reset", content: undefined }));
+    wsState.ws?.send(JSON.stringify({ action: "reset", content: undefined }));
   };
 
   const roll = (_: any) => {
-    ws.send(JSON.stringify({ action: "roll", content: undefined }));
+    wsState.ws?.send(JSON.stringify({ action: "roll", content: undefined }));
   };
 
   const onPlayerChange = (event: SelectChangeEvent<string>, index: number) => {
@@ -106,10 +118,19 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
         style={{ minHeight: "70vh", maxWidth: "100%" }}
       >
         <Grid item style={{ height: 364 }}>
-          <Lobby rollCount={state.rollCount} players={state.players} availablePlayers={state.availablePlayers} reset={reset} roll={roll} onPlayerChange={onPlayerChange} />
+          <Lobby
+            rollCount={state.rollCount}
+            players={state.players}
+            availablePlayers={state.availablePlayers}
+            reset={reset}
+            roll={roll}
+            onPlayerChange={onPlayerChange}
+          />
         </Grid>
         <Grid item>
-          <AdditionalInformationBlock availablePlayers={state.availablePlayers} />
+          <AdditionalInformationBlock
+            availablePlayers={state.availablePlayers}
+          />
         </Grid>
       </Grid>
     </Container>

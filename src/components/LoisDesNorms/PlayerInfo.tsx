@@ -6,6 +6,7 @@ import {
   MenuItem,
   Chip,
   SelectChangeEvent,
+  Avatar,
 } from "@mui/material";
 
 export interface PlayerInfoProperties {
@@ -20,6 +21,7 @@ const PlayerInfo = (props: PlayerInfoProperties) => {
   const index = props.index;
   const playerId = props.playerId;
   const role = props.role;
+  console.log(role);
   const availablePlayers = props.availablePlayers;
   const onChange = props.onChange;
 
@@ -56,7 +58,7 @@ const PlayerInfo = (props: PlayerInfoProperties) => {
         </FormControl>
       </Grid>
       <Grid item xs="auto">
-        {role && <Chip label={role} variant="outlined" />}
+        {role && <Chip label={role} avatar={<Avatar alt={role} src={`${process.env.PUBLIC_URL}/img/Position_${role}.png`} />} variant="outlined" />}
       </Grid>
     </Grid>
   );

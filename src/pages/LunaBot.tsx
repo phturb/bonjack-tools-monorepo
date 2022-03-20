@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   Paper,
   Table,
@@ -9,8 +8,10 @@ import {
   TableBody,
   Grid,
   CircularProgress,
+  Container,
+  Typography,
 } from "@mui/material";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import {
   LineChart,
   Line,
@@ -19,7 +20,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
 } from "recharts";
 import { getPrices } from "../api/prices";
 import { getLoops } from "../api/loops";
@@ -29,47 +29,64 @@ import moment from "moment";
 export type LunaBotProperties = {};
 
 const LunaBot = (props: LunaBotProperties) => {
-  const [data, setData] = useState([]);
 
-  const queryClient = useQueryClient();
+  const query = useQuery("data-luna", async () => {
+    const txs = await getTxs();
+    const prices = await getPrices();
+    const loops = await getLoops();
+    return {txs, prices, loops};
+  });
 
-  const txsQuery = useQuery("tx-data", getTxs);
-  const pricesQuery = useQuery("price-data", getPrices);
-  const loopsQuery = useQuery("loop-data", getLoops);
 
-  if (pricesQuery.status !== "success" && txsQuery.status !== "success" && loopsQuery.status !== "success") {
-    return <div>
-        <CircularProgress />
-    </div>;
+  if (query.isLoading) {
+    return (<Container>
+      <Typography variant="h4" component="h4" align="center">Luna Bot</Typography>
+      <CircularProgress />
+    </Container>);
+  }
+
+  if (query.isError) {
+    console.log(query.error)
+    return <Container>
+      <Typography variant="h4" component="h4" align="center">Luna Bot</Typography>
+      <Typography>Something went wrong: {(query.error as any).message} !</Typography>
+    </Container>
+  }
+
+  if (!query.data) {
+    return (<Container>
+      <Typography variant="h4" component="h4" align="center">Luna Bot</Typography>
+      <Typography>No data !</Typography>
+    </Container>)
   }
 
   return (
-    <div>
-
+    <Container>
+      <Typography variant="h4" component="h4" align="center">Luna Bot</Typography>
       <Grid container>
-          <Grid item>
-            <Paper >
-                {(loopsQuery.data as any[]).length}
-            </Paper>
-          </Grid>
-          <Grid item>
-            <Paper >
-                {(txsQuery.data as any[]).length}
-            </Paper>
-          </Grid>
-          <Grid item>
-            <Paper >
-                {(pricesQuery.data as any[]).length}
-            </Paper>
-          </Grid>
+        <Grid item>
+          <Paper >
+            {(query.data.loops as any[]).length}
+          </Paper>
+        </Grid>
+        <Grid item>
+          <Paper >
+            {(query.data.txs as any[]).length}
+          </Paper>
+        </Grid>
+        <Grid item>
+          <Paper >
+            {(query.data.prices as any[]).length}
+          </Paper>
+        </Grid>
       </Grid>
 
       <LineChart
         width={500}
         height={300}
-        data={(pricesQuery.data as any).slice(
-          (pricesQuery.data as any).length - 10000,
-          (pricesQuery.data as any).length - 1
+        data={(query.data.prices as any).slice(
+          (query.data.prices as any).length - 10000,
+          (query.data.prices as any).length - 1
         )}
         margin={{
           top: 5,
@@ -113,7 +130,7 @@ const LunaBot = (props: LunaBotProperties) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {(txsQuery.data as any).map((row: Tx) => (
+            {(query.data.txs as any).map((row: Tx) => (
               <TableRow
                 key={row.txHash}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -136,7 +153,7 @@ const LunaBot = (props: LunaBotProperties) => {
           </TableBody>
         </Table>
       </TableContainer>
-    </div>
+    </Container>
   );
 };
 

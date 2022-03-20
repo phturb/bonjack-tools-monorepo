@@ -8,11 +8,11 @@ const Rules = (props: {}) => {
         4. Support takes support item and jungle takes smite and jungle item
       </li>
       <li>5. You need to play until you win</li>
+      <li>6. You can't surrender</li>
       <li>
-        6. If a rematch is called and everyone jumps in, the rules starts over
+        7. If a rematch is called and everyone jumps in, the rules starts over
         again
       </li>
-      <li>7. You can't surrender</li>
     </ul>
   );
 };

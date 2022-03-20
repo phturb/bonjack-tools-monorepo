@@ -8,6 +8,11 @@ import {
   SelectChangeEvent,
   Avatar,
 } from "@mui/material";
+import topThumb from '../../img/Position_TOP.png';
+import adcThumb from '../../img/Position_ADC.png';
+import supportThumb from '../../img/Position_SUPPORT.png';
+import midThumb from '../../img/Position_MID.png';
+import jungleThumb from '../../img/Position_JUNGLE.png';
 
 export interface PlayerInfoProperties {
   index: number;
@@ -21,9 +26,16 @@ const PlayerInfo = (props: PlayerInfoProperties) => {
   const index = props.index;
   const playerId = props.playerId;
   const role = props.role;
-  console.log(role);
   const availablePlayers = props.availablePlayers;
   const onChange = props.onChange;
+
+  const imgs = {
+    TOP: topThumb,
+    ADC: adcThumb,
+    SUPPORT: supportThumb,
+    MID: midThumb,
+    JUNGLE: jungleThumb, 
+  }
 
   return (
     <Grid
@@ -58,7 +70,7 @@ const PlayerInfo = (props: PlayerInfoProperties) => {
         </FormControl>
       </Grid>
       <Grid item xs="auto">
-        {role && <Chip label={role} avatar={<Avatar alt={role} src={`${process.env.PUBLIC_URL}/img/Position_${role}.png`} />} variant="outlined" />}
+        {role && <Chip label={role} avatar={<Avatar alt={role} src={(imgs as any)[role]} />} variant="outlined" />}
       </Grid>
     </Grid>
   );

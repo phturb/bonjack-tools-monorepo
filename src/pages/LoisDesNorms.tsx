@@ -1,4 +1,4 @@
-import { Container, Grid, SelectChangeEvent } from "@mui/material";
+import { Container, Grid, SelectChangeEvent, Typography } from "@mui/material";
 import { useEffect, useReducer, useState } from "react";
 import { MessageActions, Player } from "../helpers/loisDesNorms";
 import AdditionalInformationBlock from "../components/LoisDesNorms/AdditionalInformationBlock";
@@ -87,7 +87,6 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
 
   const onPlayerChange = (event: SelectChangeEvent<string>, index: number) => {
     const playerChangeId = event.target.value as string;
-    console.log(event.target.value);
     const previousPlayer = state.players[index].player;
     if (playerChangeId !== state.players[index].player.id) {
       for (let i = 0; i < state.players.length; i++) {
@@ -109,15 +108,16 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
 
   return (
     <Container>
+      <Typography variant="h4" component="h4" align="center">Lois Des Norms</Typography>
       <Grid
         container
         direction="row"
         justifyContent="center"
         alignItems="center"
         spacing={2}
-        style={{ minHeight: "70vh", maxWidth: "100%" }}
+        style={{  maxWidth: "100%", minHeight: 440}}
       >
-        <Grid item style={{ height: 364 }}>
+        <Grid item>
           <Lobby
             rollCount={state.rollCount}
             players={state.players}

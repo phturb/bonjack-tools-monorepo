@@ -4,6 +4,7 @@ import {
   Typography,
   Paper,
   SelectChangeEvent,
+  Stack,
 } from "@mui/material";
 import { Player } from "../../helpers/loisDesNorms";
 import PlayerInfo from "./PlayerInfo";
@@ -19,13 +20,15 @@ export interface LobbyProperties {
 
 const Lobby = (props: LobbyProperties) => {
   return (
-    <Paper>
-      <Box>
-        <Typography component="h2" variant="h4">
-          Roll count : {props.rollCount}
-        </Typography>
-      </Box>
-      <Box component="form" sx={{ width: 320 }}>
+    <Paper style={{ margin: '10' }}>
+      <Stack component="form" sx={{
+        width: 320, padding: "10px", minHeight: "446px"
+      }} spacing={2}>
+        <Box>
+          <Typography component="h5" variant="h5">
+            Roll count : {props.rollCount}
+          </Typography>
+        </Box>
         {props.players.map((player: Player, index: number) => {
           return (
             <PlayerInfo
@@ -38,15 +41,16 @@ const Lobby = (props: LobbyProperties) => {
             />
           );
         })}
-      </Box>
-      <div>
-        <Button variant="outlined" onClick={props.reset}>
-          Reset
-        </Button>
-        <Button variant="contained" onClick={props.roll}>
-          Roll
-        </Button>
-      </div>
+
+        <Stack direction="row" spacing={2} justifyContent="space-around">
+          <Button variant="outlined" onClick={props.reset}>
+            Reset
+          </Button>
+          <Button variant="contained" onClick={props.roll}>
+            Roll
+          </Button>
+        </Stack>
+      </Stack>
     </Paper>
   );
 };

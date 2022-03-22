@@ -49,7 +49,7 @@ const Stats = (props: { availablePlayers: any }) => {
         <XAxis dataKey="name" />
         <YAxis domain={[0, 100]} />
         <Tooltip />
-        <Bar dataKey="winRate" fill={theme.palette.secondary.main} />
+        <Bar dataKey="winRate" name="Win Rate" fill={theme.palette.secondary.main} />
       </BarChart>
     </ResponsiveContainer>
   );

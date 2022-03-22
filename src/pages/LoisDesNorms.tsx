@@ -1,4 +1,4 @@
-import { Container, Grid, SelectChangeEvent, Typography } from "@mui/material";
+import { CircularProgress, Container, Grid, SelectChangeEvent, Typography } from "@mui/material";
 import { useEffect, useReducer, useState } from "react";
 import { MessageActions, Player } from "../helpers/loisDesNorms";
 import AdditionalInformationBlock from "../components/LoisDesNorms/AdditionalInformationBlock";
@@ -11,6 +11,7 @@ interface LoisDesNormsState {
   rollCount: number;
   gameInProgress: boolean;
   availablePlayers: any;
+  gameId: number;
 }
 
 const LoisDesNorms = (props: LoisDesNormsProperties) => {
@@ -58,6 +59,7 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
         case "updateState": {
           const newState = JSON.parse(message.content);
           newState.availablePlayers[""] = { name: undefined, stat: {} };
+          console.log(newState);
           return newState;
         }
       }
@@ -73,6 +75,7 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
       ],
       rollCount: 0,
       gameInProgress: false,
+      gameId: -1,
       availablePlayers: [{ id: undefined, name: undefined }],
     }
   );
@@ -105,6 +108,13 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
       dispatch({ action: "updatePlayers", content: state.players });
     }
   };
+
+  if(state.gameId < 0) {
+    <Container>
+      <Typography variant="h4" component="h4" align="center">Lois Des Norms</Typography>
+      <CircularProgress />
+    </Container>
+  }
 
   return (
     <Container>

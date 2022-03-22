@@ -1,4 +1,4 @@
-import { Avatar, Container, Divider, Stack, List, ListItem, ListItemAvatar, ListItemText, Typography, Paper, CircularProgress } from "@mui/material";
+import { Container, Divider, List, Typography, Paper, CircularProgress } from "@mui/material";
 import axios from "axios";
 import { useQuery } from "react-query";
 import CoinTracker from "../components/CryptoTracker/CoinTracker";
@@ -29,7 +29,7 @@ const CryptoTracker = (props: {}) => {
 
     const cryptos = useQuery("cryptos", queryCryptos, { refetchInterval: 120000 });
     let data;
-    if (cryptos.status === "success") {
+    if (cryptos.isSuccess) {
         if (cryptos.data) {
             data = cryptos.data;
         } else {

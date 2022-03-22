@@ -11,23 +11,48 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useState } from "react";
-import { routes } from "../routes";
+import { cryptoRoutes, gamesToolRoutes, homeRoute, otherProjects, routes } from "../routes";
 import { Link as RouterLink } from "react-router-dom";
 
 export type NavBarProperties = {};
 
 const NavBar = (props: NavBarProperties) => {
-  const [anchorElNav, setAnchorElNav] = useState<HTMLElement | undefined>(
-    undefined
-  );
+  const [anchorElNav, setAnchorElNav] = useState<HTMLElement | null>(null);
+  const [anchorElCrypto, setAnchorElCrypto] = useState<HTMLElement | null>(null);
+  const [anchorElGames, setAnchorElGames] = useState<HTMLElement | null>(null);
 
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
+  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>, anchorSet: (value: React.SetStateAction<HTMLElement | null>) => void ) => {
+    anchorSet(event.currentTarget);
   };
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(undefined);
+  const handleCloseNavMenu = (anchorSet: (value: React.SetStateAction<HTMLElement | null>) => void ) => {
+    anchorSet(null);
   };
+
+  const buttonNavGenerator = (route: { name: string, path: string }) => {
+    return (
+      <Button
+        component={RouterLink}
+        to={route.path}
+        key={route.name + "-nav"}
+        onClick={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElNav)}}
+        sx={{ my: 2, color: "white", display: "block" }}
+      >
+        {route.name}
+      </Button>
+    );
+  }
+
+  const menuItemNavGenerator = (route: { name: string, path: string }) => {
+    return (<MenuItem
+      key={route.name + "-nav"}
+      component={RouterLink}
+      to={route.path}
+      onClick={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElNav)}}
+    >
+      <Typography textAlign="center">{route.name}</Typography>
+    </MenuItem>);
+  }
 
   return (
     <Box>
@@ -46,32 +71,25 @@ const NavBar = (props: NavBarProperties) => {
               <IconButton
                 size="large"
                 color="inherit"
-                onClick={handleOpenUserMenu}
+                onClick={(event: React.MouseEvent<HTMLElement> ) => {handleOpenUserMenu(event, setAnchorElNav)}}
               >
+
                 <MenuIcon />
-                <Menu
-                  id="navigation-menu"
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  keepMounted
-                  anchorEl={anchorElNav}
-                  open={Boolean(anchorElNav)}
-                  onClose={handleCloseNavMenu}
-                >
-                  {routes.map((route) => (
-                    <MenuItem
-                      key={route.name + "-nav"}
-                      component={RouterLink}
-                      to={route.path}
-                      onClick={handleCloseNavMenu}
-                    >
-                      <Typography textAlign="center">{route.name}</Typography>
-                    </MenuItem>
-                  ))}
-                </Menu>
               </IconButton>
+              <Menu
+                id="navigation-menu"
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                anchorEl={anchorElNav}
+                open={Boolean(anchorElNav)}
+                onClose={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElNav)}}
+              >
+                {routes.map(menuItemNavGenerator)}
+              </Menu>
+
             </Box>
             <Typography
               variant="h6"
@@ -82,17 +100,47 @@ const NavBar = (props: NavBarProperties) => {
               BonJack Tools
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-              {routes.map((route) => (
+              {buttonNavGenerator(homeRoute)}
+
                 <Button
-                  component={RouterLink}
-                  to={route.path}
-                  key={route.name + "-nav"}
-                  onClick={handleCloseNavMenu}
-                  sx={{ my: 2, color: "white", display: "block" }}
-                >
-                  {route.name}
-                </Button>
-              ))}
+                onClick={(event: React.MouseEvent<HTMLElement> ) => {handleOpenUserMenu(event, setAnchorElCrypto)}}
+                sx={{ my: 2, color: "white", display: "block" }}
+              >
+                {cryptoRoutes.name}
+              </Button>
+              <Menu
+                id={`navigation-menu-${cryptoRoutes.name}`}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                anchorEl={anchorElCrypto}
+                open={Boolean(anchorElCrypto)}
+                onClose={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElCrypto)}}
+              >
+                {cryptoRoutes.routes.map(menuItemNavGenerator)}
+              </Menu>
+              <Button
+                onClick={(event: React.MouseEvent<HTMLElement> ) => {handleOpenUserMenu(event, setAnchorElGames)}}
+                sx={{ my: 2, color: "white", display: "block" }}
+              >
+                {gamesToolRoutes.name}
+              </Button>
+              <Menu
+                id={`navigation-menu-${gamesToolRoutes.name}`}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                anchorEl={anchorElGames}
+                open={Boolean(anchorElGames)}
+                onClose={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElGames)}}
+              >
+                {gamesToolRoutes.routes.map(menuItemNavGenerator)}
+              </Menu>
+              {buttonNavGenerator(otherProjects)}
             </Box>
           </Toolbar>
         </Container>

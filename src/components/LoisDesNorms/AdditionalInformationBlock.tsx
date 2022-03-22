@@ -8,7 +8,7 @@ const AdditionalInformationBlock = (props: { availablePlayers: any}) => {
 
   return (
     <Paper>
-      <Box sx={{ padding: "10px", minHeight: "446px", width: "400px"
+      <Box sx={{ padding: "10px", minHeight: "446px", width: "375px"
       }}>
       <Tabs
         value={state}
@@ -19,10 +19,10 @@ const AdditionalInformationBlock = (props: { availablePlayers: any}) => {
         <Tab id="rules" label="Rules" value={0} />
         <Tab id="stats" label="Stats" value={1} />
       </Tabs>
-      <div hidden={state !== 1} style={{ height: 360, width: 400 }}>
+      <div hidden={state !== 1} style={{ height: 360, width: 375 }}>
         <Stats availablePlayers={props.availablePlayers} />
       </div>
-      <div hidden={state !== 0} style={{ height: 360, width: 400 }}>
+      <div hidden={state !== 0} style={{ height: 360, width: 375 }}>
         <Rules />
       </div>
       </Box>

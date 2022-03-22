@@ -5,7 +5,7 @@ const CoinTracker = (props: any) => {
     const coinDetail = (
         <Stack direction="row" spacing={2}>
             <Typography>Price: {props.market_data.current_price.usd}</Typography>
-            <Typography>Percentage Change: {props.market_data.price_change_percentage_24h}</Typography>
+            <Typography>Percentage Change: <span style={{color: props.market_data.price_change_percentage_24h <= 0 ? 'red' : 'green'}}>{props.market_data.price_change_percentage_24h}</span></Typography>
         </Stack>
 
     );

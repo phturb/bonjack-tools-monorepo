@@ -14,6 +14,8 @@ interface GameState {
   gameInProgress: boolean;
   availablePlayers: any;
   gameId: number;
+  nextRollTimer: number;
+  canRoll: boolean;
 }
 
 export {DiscordPlayer, GamePlayer, GameState};

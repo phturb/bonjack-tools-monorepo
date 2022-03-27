@@ -23,6 +23,10 @@ class DiscordManager {
     
     return channel as VoiceChannel | null;
   }
+
+  close() {
+    this.discordClient.destroy();
+  }
 }
 
 export default DiscordManager;

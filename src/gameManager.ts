@@ -6,7 +6,7 @@ import { getPlayerStats } from "./helpers/stats.helpers";
 import { PrismaClient } from "@prisma/client";
 import { VoiceChannel, VoiceState } from "discord.js";
 import { broadcast, send } from "./helpers/ws.helpers";
-import { CHANNEL_ID } from "./config/config";
+import { CHANNEL_ID, TIMER_TIME } from "./config/config";
 import { Message } from "./interfaces/message.interface";
 
 class GameManager {
@@ -16,6 +16,7 @@ class GameManager {
   httpServer: HttpServer;
   webSocketServer: WebSocketServer;
   prisma: PrismaClient;
+  countDownId: NodeJS.Timer | undefined;
 
   constructor(
     discordManager: DiscordManager,
@@ -39,8 +40,11 @@ class GameManager {
       gameInProgress: false,
       availablePlayers: { "": undefined },
       gameId: 0,
+      nextRollTimer: 0,
+      canRoll: true,
     };
     this.roles = ["ADC", "MID", "JUNGLE", "SUPPORT", "TOP"];
+    this.countDownId = undefined;
   }
 
   async init() {
@@ -51,41 +55,46 @@ class GameManager {
 
   private registerWebSocket() {
     this.webSocketServer.on("connection", (ws: WebSocket) => {
-        ws.on("message", async (message: string) => {
-          const parsedMessage: Message = JSON.parse(message);
-          if (parsedMessage.action === "updatePlayers") {
-            await this.updatePlayers(ws, parsedMessage);
-          }
-          if (parsedMessage.action === "roll") {
-            await this.roll();
-          }
-          if (parsedMessage.action === "reset") {
-            await this.reset();
-          }
-  
-          if (parsedMessage.action === "refreshDiscord") {
-              this.refreshDiscord();
-          }
-        });
-        send(
-          { action: "updateState", content: JSON.stringify(this.gameState) },
-          ws
-        );
+      ws.on("message", async (message: string) => {
+        const parsedMessage: Message = JSON.parse(message);
+        if (parsedMessage.action === "updatePlayers") {
+          await this.updatePlayers(ws, parsedMessage);
+        }
+        if (parsedMessage.action === "roll") {
+          await this.roll();
+        }
+
+        if (parsedMessage.action === "cancel") {
+          await this.cancel();
+        }
+
+        if (parsedMessage.action === "reset") {
+          await this.reset();
+        }
+
+        if (parsedMessage.action === "refreshDiscord") {
+          this.refreshDiscord();
+        }
       });
+      send(
+        { action: "updateState", content: JSON.stringify(this.gameState) },
+        ws
+      );
+    });
   }
 
   private registerDiscord() {
     this.discordManager.discordClient.on(
-        "voiceStateUpdate",
-        async (oldState: VoiceState, newState: VoiceState) => {
-          if (
-            oldState.channelId === CHANNEL_ID ||
-            newState.channelId === CHANNEL_ID
-          ) {
-            await this.updatePlayerListFromDiscord();
-          }
+      "voiceStateUpdate",
+      async (oldState: VoiceState, newState: VoiceState) => {
+        if (
+          oldState.channelId === CHANNEL_ID ||
+          newState.channelId === CHANNEL_ID
+        ) {
+          await this.updatePlayerListFromDiscord();
         }
-      );
+      }
+    );
   }
 
   private async refreshDiscord() {
@@ -100,11 +109,55 @@ class GameManager {
     for (let i = 0; i < this.gameState.players.length; i++) {
       this.gameState.players[i].role = undefined;
     }
+    if (this.countDownId) {
+      clearInterval(this.countDownId)
+    };
+    this.countDownId = undefined;
+    this.gameState.nextRollTimer = 0;
+    this.gameState.canRoll = true;
     this.updatePlayerListFromDiscord();
     broadcast(this.webSocketServer, {
       action: "updateState",
       content: JSON.stringify(this.gameState),
     });
+  }
+
+  private async cancel() {
+    console.warn("Game canceled!");
+    if (this.gameState.gameInProgress && this.gameState.rollCount > 0) {
+      await this.prisma.roll.deleteMany(
+        {
+          where: {
+            gameId: this.gameState.gameId,
+          }
+        }
+      );
+      await this.prisma.game.delete(
+        {
+          where: {
+            id: this.gameState.gameId,
+          }
+        }
+      );
+      this.gameState.gameId -= 1;
+    }
+    this.gameState.gameInProgress = false;
+    this.gameState.rollCount = 0;
+    for (let i = 0; i < this.gameState.players.length; i++) {
+      this.gameState.players[i].role = undefined;
+    }
+    if (this.countDownId) {
+      clearInterval(this.countDownId)
+    };
+    this.countDownId = undefined;
+    this.gameState.nextRollTimer = 0;
+    this.gameState.canRoll = true;
+    this.updatePlayerListFromDiscord();
+    broadcast(this.webSocketServer, {
+      action: "updateState",
+      content: JSON.stringify(this.gameState),
+    });
+
   }
 
   private async updatePlayers(ws: WebSocket, parsedMessage: Message) {
@@ -136,34 +189,39 @@ class GameManager {
   }
 
   private async roll() {
+    if(!this.gameState.canRoll) {
+      return;
+    }
+    this.gameState.canRoll = false;
+    this.gameState.nextRollTimer = TIMER_TIME;
     if (!this.gameState.gameInProgress) {
       this.gameState.gameInProgress = true;
       const currentGame = await this.prisma.game.create({
         data: {
           player_game_player1IdToplayer: this.gameState.players[0].player.id
             ? {
-                connect: { id: this.gameState.players[0].player.id },
-              }
+              connect: { id: this.gameState.players[0].player.id },
+            }
             : undefined,
           player_game_player2IdToplayer: this.gameState.players[1].player.id
             ? {
-                connect: { id: this.gameState.players[1].player.id },
-              }
+              connect: { id: this.gameState.players[1].player.id },
+            }
             : undefined,
           player_game_player3IdToplayer: this.gameState.players[2].player.id
             ? {
-                connect: { id: this.gameState.players[2].player.id },
-              }
+              connect: { id: this.gameState.players[2].player.id },
+            }
             : undefined,
           player_game_player4IdToplayer: this.gameState.players[3].player.id
             ? {
-                connect: { id: this.gameState.players[3].player.id },
-              }
+              connect: { id: this.gameState.players[3].player.id },
+            }
             : undefined,
           player_game_player5IdToplayer: this.gameState.players[4].player.id
             ? {
-                connect: { id: this.gameState.players[4].player.id },
-              }
+              connect: { id: this.gameState.players[4].player.id },
+            }
             : undefined,
         },
       });
@@ -187,6 +245,23 @@ class GameManager {
         player5Roll: this.gameState.players[4].role ?? null,
       },
     });
+
+    this.countDownId = setInterval(() => {
+      this.gameState.nextRollTimer -= 1000;
+      if (this.gameState.canRoll || this.gameState.nextRollTimer <= 0) {
+        if (this.countDownId) {
+          clearInterval(this.countDownId)
+        };
+        this.countDownId = undefined;
+        this.gameState.nextRollTimer = 0;
+        this.gameState.canRoll = true;
+        broadcast(this.webSocketServer, {
+          action: "updateState",
+          content: JSON.stringify(this.gameState),
+        });
+      }
+    }, 1000);
+
     broadcast(this.webSocketServer, {
       action: "updateState",
       content: JSON.stringify(this.gameState),

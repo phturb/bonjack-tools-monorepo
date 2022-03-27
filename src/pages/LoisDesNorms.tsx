@@ -12,6 +12,8 @@ interface LoisDesNormsState {
   gameInProgress: boolean;
   availablePlayers: any;
   gameId: number;
+  nextRollTimer: number;
+  canRoll: boolean;
 }
 
 const LoisDesNorms = (props: LoisDesNormsProperties) => {
@@ -59,7 +61,6 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
         case "updateState": {
           const newState = JSON.parse(message.content);
           newState.availablePlayers[""] = { name: undefined, stat: {} };
-          console.log(newState);
           return newState;
         }
       }
@@ -76,6 +77,8 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
       rollCount: 0,
       gameInProgress: false,
       gameId: -1,
+      nextRollTimer: 0,
+      canRoll: false,
       availablePlayers: [{ id: undefined, name: undefined }],
     }
   );
@@ -86,6 +89,10 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
 
   const roll = (_: any) => {
     wsState.ws?.send(JSON.stringify({ action: "roll", content: undefined }));
+  };
+
+  const cancel = (_: any) => {
+    wsState.ws?.send(JSON.stringify({ action: "cancel", content: undefined}));
   };
 
   const onPlayerChange = (event: SelectChangeEvent<string>, index: number) => {
@@ -132,8 +139,11 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
             rollCount={state.rollCount}
             players={state.players}
             availablePlayers={state.availablePlayers}
+            canRoll={state.canRoll}
+            nextRollTimer={state.nextRollTimer}
             reset={reset}
             roll={roll}
+            cancel={cancel}
             onPlayerChange={onPlayerChange}
           />
         </Grid>

@@ -6,6 +6,7 @@ import {
   SelectChangeEvent,
   Stack,
 } from "@mui/material";
+import Countdown from "react-countdown";
 import { Player } from "../../helpers/loisDesNorms";
 import PlayerInfo from "./PlayerInfo";
 
@@ -13,12 +14,16 @@ export interface LobbyProperties {
   rollCount: number;
   players: Player[];
   availablePlayers: any;
+  canRoll: boolean;
+  nextRollTimer: number;
   reset: (_: any) => void;
   roll: (_: any) => void;
+  cancel: (_: any) => void;
   onPlayerChange: (event: SelectChangeEvent<string>, index: number) => void;
 };
 
 const Lobby = (props: LobbyProperties) => {
+  console.log(props);
   return (
     <Paper style={{ margin: '10' }}>
       <Stack component="form" sx={{
@@ -43,12 +48,16 @@ const Lobby = (props: LobbyProperties) => {
         })}
 
         <Stack direction="row" spacing={2} justifyContent="space-around">
-          <Button variant="outlined" onClick={props.reset}>
+          <Button variant="outlined" onClick={props.cancel}>
             Reset
           </Button>
-          <Button variant="contained" onClick={props.roll}>
-            Roll
+          <Button variant="contained" onClick={props.reset}>
+            Finish
           </Button>
+
+          {props.canRoll ? (<Button variant="contained" onClick={props.roll} disabled={!props.canRoll}>
+            Roll
+          </Button>) : (<Box><Countdown date={Date.now() + props.nextRollTimer}></Countdown></Box>)}
         </Stack>
       </Stack>
     </Paper>

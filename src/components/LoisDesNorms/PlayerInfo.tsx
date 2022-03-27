@@ -70,7 +70,7 @@ const PlayerInfo = (props: PlayerInfoProperties) => {
         </FormControl>
       </Grid>
       <Grid item xs="auto">
-        {role && <Chip label={role} avatar={<Avatar alt={role} src={(imgs as any)[role]} />} variant="outlined" />}
+        {role && <Chip sx={{width:"105px"}} label={role} avatar={<Avatar alt={role} src={(imgs as any)[role]} />} variant="outlined" />}
       </Grid>
     </Grid>
   );

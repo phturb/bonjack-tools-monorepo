@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model game {
+  id                            Int     @id @default(autoincrement())
+  player1Id                     String?
+  player2Id                     String?
+  player3Id                     String?
+  player4Id                     String?
+  player5Id                     String?
+  player_game_player1IdToplayer player? @relation("game_player1IdToplayer", fields: [player1Id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  player_game_player2IdToplayer player? @relation("game_player2IdToplayer", fields: [player2Id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  player_game_player3IdToplayer player? @relation("game_player3IdToplayer", fields: [player3Id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  player_game_player4IdToplayer player? @relation("game_player4IdToplayer", fields: [player4Id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  player_game_player5IdToplayer player? @relation("game_player5IdToplayer", fields: [player5Id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  roll                          roll[]
+}
+
+model player {
+  id                          String  @id
+  name                        String?
+  game_game_player1IdToplayer game[]  @relation("game_player1IdToplayer")
+  game_game_player2IdToplayer game[]  @relation("game_player2IdToplayer")
+  game_game_player3IdToplayer game[]  @relation("game_player3IdToplayer")
+  game_game_player4IdToplayer game[]  @relation("game_player4IdToplayer")
+  game_game_player5IdToplayer game[]  @relation("game_player5IdToplayer")
+}
+
+model roll {
+  gameId      Int
+  rollNumber  Int
+  player1Roll String?
+  player2Roll String?
+  player3Roll String?
+  player4Roll String?
+  player5Roll String?
+  game        game    @relation(fields: [gameId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([gameId, rollNumber])
+}

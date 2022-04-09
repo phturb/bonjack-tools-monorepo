@@ -1,12 +1,16 @@
+export type LeagueOfLegendsRole = "ADC" | "MID" | "JUNGLE" | "SUPPORT" | "TOP";
+
+export type MessageActions = 'updatePlayers' | 'updateState';
+
 interface DiscordPlayer {
   id: string;
   name: string | undefined;
-}
+};
 
 interface GamePlayer {
   player: DiscordPlayer;
   role: string | undefined;
-}
+};
 
 interface GameState {
   players: GamePlayer[];
@@ -16,6 +20,10 @@ interface GameState {
   gameId: number;
   nextRollTimer: number;
   canRoll: boolean;
-}
+};
 
-export {DiscordPlayer, GamePlayer, GameState};
+const emptyDiscordPlayer = (): DiscordPlayer => {return { id: "", name: undefined };};
+
+const emptyPlayer = (): GamePlayer => {return {player: emptyDiscordPlayer(), role: undefined};};
+
+export {DiscordPlayer, emptyDiscordPlayer, GamePlayer, GameState, emptyPlayer};

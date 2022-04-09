@@ -1,6 +1,6 @@
 import { CircularProgress, Container, Grid, SelectChangeEvent, Typography } from "@mui/material";
 import { useEffect, useReducer, useState } from "react";
-import { MessageActions, Player } from "../helpers/loisDesNorms";
+import { emptyDiscordPlayer, emptyPlayer, MessageActions, Player } from "../helpers/loisDesNorms";
 import AdditionalInformationBlock from "../components/LoisDesNorms/AdditionalInformationBlock";
 import Lobby from "../components/LoisDesNorms/Lobby";
 
@@ -68,18 +68,18 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
     },
     {
       players: [
-        { player: { id: "", name: undefined }, role: undefined },
-        { player: { id: "", name: undefined }, role: undefined },
-        { player: { id: "", name: undefined }, role: undefined },
-        { player: { id: "", name: undefined }, role: undefined },
-        { player: { id: "", name: undefined }, role: undefined },
+        emptyPlayer(),
+        emptyPlayer(),
+        emptyPlayer(),
+        emptyPlayer(),
+        emptyPlayer(),
       ],
       rollCount: 0,
       gameInProgress: false,
       gameId: -1,
       nextRollTimer: 0,
       canRoll: false,
-      availablePlayers: [{ id: undefined, name: undefined }],
+      availablePlayers: [emptyDiscordPlayer()],
     }
   );
 

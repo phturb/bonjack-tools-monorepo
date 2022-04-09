@@ -16,12 +16,15 @@ class DiscordManager {
     await this.discordClient.login(DISCORD_TOKEN!);
   }
 
-  async getChannel() {
-    const channel: AnyChannel | null = await this.discordClient.channels.fetch(
+  async getChannel(): Promise<VoiceChannel | null> {
+      try {
+    return await this.discordClient.channels.fetch(
       CHANNEL_ID
-    );
-    
-    return channel as VoiceChannel | null;
+    ) as VoiceChannel;
+    } catch (e : any) {
+        console.warn(e);
+        return null;
+    }
   }
 
   close() {

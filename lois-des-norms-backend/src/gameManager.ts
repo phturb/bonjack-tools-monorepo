@@ -1,13 +1,21 @@
-import { GameState } from "./interfaces/gameState.interface";
+import { PrismaClient } from "@prisma/client";
+import {
+  CacheType,
+  Interaction,
+  MessageActionRow,
+  MessageButton,
+  VoiceChannel,
+  VoiceState,
+  Message,
+} from "discord.js";
 import { Server as HttpServer } from "http";
-import { WebSocket, Server as WebSocketServer } from "ws";
+import { Server as WebSocketServer, WebSocket } from "ws";
+import { CHANNEL_ID, TIMER_TIME } from "./config/config";
 import DiscordManager from "./discordManager";
 import { getPlayerStats } from "./helpers/stats.helpers";
-import { PrismaClient } from "@prisma/client";
-import { VoiceChannel, VoiceState } from "discord.js";
 import { broadcast, send } from "./helpers/ws.helpers";
-import { CHANNEL_ID, TIMER_TIME } from "./config/config";
-import { Message } from "./interfaces/message.interface";
+import { emptyPlayer, GameState } from "./interfaces/gameState.interface";
+import { Message as Msg } from "./interfaces/message.interface";
 
 class GameManager {
   roles: string[];
@@ -17,6 +25,7 @@ class GameManager {
   webSocketServer: WebSocketServer;
   prisma: PrismaClient;
   countDownId: NodeJS.Timer | undefined;
+  discordGameMessage: Message<boolean> | undefined;
 
   constructor(
     discordManager: DiscordManager,
@@ -30,11 +39,11 @@ class GameManager {
     this.webSocketServer = webSocketServer;
     this.gameState = {
       players: [
-        { player: { id: "", name: undefined }, role: undefined },
-        { player: { id: "", name: undefined }, role: undefined },
-        { player: { id: "", name: undefined }, role: undefined },
-        { player: { id: "", name: undefined }, role: undefined },
-        { player: { id: "", name: undefined }, role: undefined },
+        emptyPlayer(),
+        emptyPlayer(),
+        emptyPlayer(),
+        emptyPlayer(),
+        emptyPlayer(),
       ],
       rollCount: 0,
       gameInProgress: false,
@@ -45,6 +54,7 @@ class GameManager {
     };
     this.roles = ["ADC", "MID", "JUNGLE", "SUPPORT", "TOP"];
     this.countDownId = undefined;
+    this.discordGameMessage = undefined;
   }
 
   async init() {
@@ -56,7 +66,7 @@ class GameManager {
   private registerWebSocket() {
     this.webSocketServer.on("connection", (ws: WebSocket) => {
       ws.on("message", async (message: string) => {
-        const parsedMessage: Message = JSON.parse(message);
+        const parsedMessage: Msg = JSON.parse(message);
         if (parsedMessage.action === "updatePlayers") {
           await this.updatePlayers(ws, parsedMessage);
         }
@@ -80,6 +90,9 @@ class GameManager {
         { action: "updateState", content: JSON.stringify(this.gameState) },
         ws
       );
+      ws.on("error", function (err: Error) {
+        console.warn(err);
+      });
     });
   }
 
@@ -95,11 +108,137 @@ class GameManager {
         }
       }
     );
+    this.discordManager.discordClient.on(
+      "interactionCreate",
+      async (interaction: Interaction<CacheType>) => {
+        if (
+          interaction.isButton() &&
+          this.discordGameMessage?.id === interaction.message.id
+        ) {
+          if (interaction.customId === "roll_btn") {
+            await this.roll();
+            await this.updateGameMessage();
+          } else if (interaction.customId === "finish_btn") {
+            await this.reset();
+            await this.updateGameMessage();
+          } else if (interaction.customId === "cancel_btn") {
+            await this.cancel();
+            await this.updateGameMessage();
+          }
+          await interaction.deferUpdate();
+          return;
+        }
+        if (interaction.isButton()) {
+          await interaction.deferUpdate();
+          return;
+        }
+
+        if (!interaction.isCommand()) {
+          return;
+        }
+        const commandName = interaction.commandName;
+
+        if (commandName !== "ldn") {
+          return;
+        }
+
+        const { embedMessage, components } = this.createMessageElements();
+        this.discordGameMessage = (await interaction.reply({
+          content: embedMessage,
+          components: [components],
+          fetchReply: true,
+        })) as Message<boolean>;
+      }
+    );
+  }
+
+  private createMessageEmbed(): string {
+    let description;
+    if (this.gameState.gameInProgress) {
+      description = `Loi in progress, roll number : ${this.gameState.rollCount}`;
+    } else {
+      description =
+        "Waiting for players ...\nGo see the web dashboard at https://tools.bonjack.club/lois-des-norms";
+    }
+    let customMessage = description;
+    customMessage += "\n";
+    this.gameState.players.forEach((gamePlayer, index) => {
+      customMessage += "> ";
+      customMessage += gamePlayer.role
+        ? `*${gamePlayer.role}*`
+        : `*Player ${index + 1}*`;
+      customMessage += "\t";
+      customMessage += gamePlayer.player.name ?? "Empty Spot";
+      customMessage += "\n";
+    });
+    return customMessage;
+  }
+
+  private createMessageElements(): {
+    embedMessage: string;
+    components: MessageActionRow;
+  } {
+    const embedMessage = this.createMessageEmbed();
+    const buttons = [
+      new MessageButton()
+        .setCustomId("roll_btn")
+        .setLabel("Roll")
+        .setStyle("PRIMARY")
+        .setDisabled(!this.gameState.canRoll),
+      new MessageButton()
+        .setCustomId("finish_btn")
+        .setLabel("Finish")
+        .setStyle("SUCCESS")
+        .setDisabled(!this.gameState.gameInProgress),
+      new MessageButton()
+        .setCustomId("cancel_btn")
+        .setLabel("Cancel")
+        .setStyle("DANGER"),
+    ];
+    const components = new MessageActionRow().addComponents(buttons);
+    return { embedMessage, components };
+  }
+
+  private async updateGameMessage() {
+    if (this.discordGameMessage) {
+      const { embedMessage, components } = this.createMessageElements();
+      this.discordGameMessage = (await this.discordGameMessage?.edit({
+        content: embedMessage,
+        components: [components],
+      })) as any;
+      console.log(this.discordGameMessage);
+    }
+  }
+
+  private clearMessage() {
+    this.discordGameMessage = undefined;
   }
 
   private async refreshDiscord() {
     console.log("Refresh Discord information");
     await this.updatePlayerListFromDiscord();
+  }
+
+  private async resetMessage(type: "reset" | "cancel") {
+    const typeText = type === "reset" ? "Finished" : "Canceled";
+    const description = `Loi is ${typeText} !`;
+    let customMessage = "**Lois Des Norms**\n";
+    customMessage += description;
+    customMessage += "\n";
+    this.gameState.players.forEach((gamePlayer, index) => {
+      customMessage += "> ";
+      customMessage += gamePlayer.role
+        ? `*${gamePlayer.role}*`
+        : `*Player ${index + 1}*`;
+      customMessage += "\t";
+      customMessage += gamePlayer.player.name ?? "Empty Spot";
+      customMessage += "\n";
+    });
+    if (this.discordGameMessage) {
+      this.discordGameMessage = (await this.discordGameMessage?.edit(
+        customMessage
+      )) as any;
+    }
   }
 
   private async reset() {
@@ -110,12 +249,16 @@ class GameManager {
       this.gameState.players[i].role = undefined;
     }
     if (this.countDownId) {
-      clearInterval(this.countDownId)
-    };
+      clearInterval(this.countDownId);
+    }
     this.countDownId = undefined;
     this.gameState.nextRollTimer = 0;
     this.gameState.canRoll = true;
+    // TODO : Update discord message with finish or reset
+    await this.resetMessage("reset");
+    this.clearMessage();
     this.updatePlayerListFromDiscord();
+
     broadcast(this.webSocketServer, {
       action: "updateState",
       content: JSON.stringify(this.gameState),
@@ -125,20 +268,16 @@ class GameManager {
   private async cancel() {
     console.warn("Game canceled!");
     if (this.gameState.gameInProgress && this.gameState.rollCount > 0) {
-      await this.prisma.roll.deleteMany(
-        {
-          where: {
-            gameId: this.gameState.gameId,
-          }
-        }
-      );
-      await this.prisma.game.delete(
-        {
-          where: {
-            id: this.gameState.gameId,
-          }
-        }
-      );
+      await this.prisma.roll.deleteMany({
+        where: {
+          gameId: this.gameState.gameId,
+        },
+      });
+      await this.prisma.game.delete({
+        where: {
+          id: this.gameState.gameId,
+        },
+      });
       this.gameState.gameId -= 1;
     }
     this.gameState.gameInProgress = false;
@@ -147,20 +286,21 @@ class GameManager {
       this.gameState.players[i].role = undefined;
     }
     if (this.countDownId) {
-      clearInterval(this.countDownId)
-    };
+      clearInterval(this.countDownId);
+    }
     this.countDownId = undefined;
     this.gameState.nextRollTimer = 0;
     this.gameState.canRoll = true;
+    await this.resetMessage("cancel");
+    this.clearMessage();
     this.updatePlayerListFromDiscord();
     broadcast(this.webSocketServer, {
       action: "updateState",
       content: JSON.stringify(this.gameState),
     });
-
   }
 
-  private async updatePlayers(ws: WebSocket, parsedMessage: Message) {
+  private async updatePlayers(ws: WebSocket, parsedMessage: Msg) {
     const content: { id: string; name: string | undefined }[] = JSON.parse(
       parsedMessage.content
     );
@@ -189,7 +329,7 @@ class GameManager {
   }
 
   private async roll() {
-    if(!this.gameState.canRoll) {
+    if (!this.gameState.canRoll) {
       return;
     }
     this.gameState.canRoll = false;
@@ -200,28 +340,28 @@ class GameManager {
         data: {
           player_game_player1IdToplayer: this.gameState.players[0].player.id
             ? {
-              connect: { id: this.gameState.players[0].player.id },
-            }
+                connect: { id: this.gameState.players[0].player.id },
+              }
             : undefined,
           player_game_player2IdToplayer: this.gameState.players[1].player.id
             ? {
-              connect: { id: this.gameState.players[1].player.id },
-            }
+                connect: { id: this.gameState.players[1].player.id },
+              }
             : undefined,
           player_game_player3IdToplayer: this.gameState.players[2].player.id
             ? {
-              connect: { id: this.gameState.players[2].player.id },
-            }
+                connect: { id: this.gameState.players[2].player.id },
+              }
             : undefined,
           player_game_player4IdToplayer: this.gameState.players[3].player.id
             ? {
-              connect: { id: this.gameState.players[3].player.id },
-            }
+                connect: { id: this.gameState.players[3].player.id },
+              }
             : undefined,
           player_game_player5IdToplayer: this.gameState.players[4].player.id
             ? {
-              connect: { id: this.gameState.players[4].player.id },
-            }
+                connect: { id: this.gameState.players[4].player.id },
+              }
             : undefined,
         },
       });
@@ -246,22 +386,23 @@ class GameManager {
       },
     });
 
-    this.countDownId = setInterval(() => {
+    this.countDownId = setInterval(async () => {
       this.gameState.nextRollTimer -= 1000;
       if (this.gameState.canRoll || this.gameState.nextRollTimer <= 0) {
         if (this.countDownId) {
-          clearInterval(this.countDownId)
-        };
+          clearInterval(this.countDownId);
+        }
         this.countDownId = undefined;
         this.gameState.nextRollTimer = 0;
         this.gameState.canRoll = true;
+        await this.updateGameMessage();
         broadcast(this.webSocketServer, {
           action: "updateState",
           content: JSON.stringify(this.gameState),
         });
       }
     }, 1000);
-
+    await this.updateGameMessage();
     broadcast(this.webSocketServer, {
       action: "updateState",
       content: JSON.stringify(this.gameState),
@@ -328,6 +469,7 @@ class GameManager {
         content: JSON.stringify(this.gameState),
       });
     }
+    await this.updateGameMessage();
   }
 
   private verifyAndAdjustPlayers(
@@ -348,7 +490,7 @@ class GameManager {
     }
     for (let i = 0; i < players.length; i++) {
       if (!availablePlayers[players[i].player.id as string]) {
-        players[i] = { player: { id: "", name: undefined }, role: undefined };
+        players[i] = emptyPlayer();
       }
     }
     return players;

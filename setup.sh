@@ -15,7 +15,7 @@ sudo rm -rf /opt/app/ldn-backend
 sudo rm -f /etc/supervisor/conf.d/ldn-backend.conf
 
 "Echo verify if user $appuser exist ..."
-if id "$1" &>/dev/null; then
+if id "$appuser" &>/dev/null; then
     echo "User : $appuser exist"
 else
     echo "Create appuser"

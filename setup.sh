@@ -25,7 +25,7 @@ else
 fi
 
 echo "Creating superviosr config ..."
-set "s/{{APPUSER}}/$appuser/g" supervisor.conf > ldn-backend.conf
+sed "s/{{APPUSER}}/$appuser/g" supervisor.conf > ldn-backend.conf
 sudo mv -f ldn-backend.conf /etc/supervisor/conf.d/ldn-backend.conf
 
 echo "Creating nginx config ..."
@@ -59,11 +59,11 @@ sudo cp -r ./lois-des-norms-backend /opt/app/ldn-backend
 echo "Give $appuser the ownership of the /opt/app/ldn-backend directory ..."
 sudo chown -R $appuser:$appuser /opt/app/ldn-backend
 echo "Copy static website ..."
-sudo cp -r ./frontend/dist /var/www/tools.bonjack.club/html
+sudo cp -r ./frontend/build /var/www/tools.bonjack.club/html
 
 echo "Update supervisor"
 sudo supervisorctl reread
 sudo supervisorctl update
-sudo supervisorctl restart
+sudo supervisorctl restart ldn-backend
 
 echo "Finished !"

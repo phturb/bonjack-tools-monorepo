@@ -3,6 +3,7 @@
 domain=tools.bonjack.club
 appuser=nodeapp
 
+user_exists(){ id "$1" &>/dev/null; }
 
 echo "Create necessary directories ..."
 sudo mkdir -p /opt/app
@@ -15,7 +16,7 @@ sudo rm -rf /opt/app/ldn-backend
 sudo rm -f /etc/supervisor/conf.d/ldn-backend.conf
 
 "Echo verify if user $appuser exist ..."
-if id "$appuser" &>/dev/null; then
+if user_exists $appuser; code=$?; then
     echo "User : $appuser exist"
 else
     echo "Create appuser"

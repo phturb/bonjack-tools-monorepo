@@ -3,6 +3,7 @@
 domain=tools.bonjack.club
 appuser=nodeapp
 
+
 echo "Create necessary directories ..."
 sudo mkdir -p /opt/app
 sudo mkdir -p /var/www/$domain
@@ -13,9 +14,18 @@ sudo rm -rf /var/www/$domain/html
 sudo rm -rf /opt/app/ldn-backend
 sudo rm -f /etc/supervisor/conf.d/ldn-backend.conf
 
+"Echo verify if user $appuser exist ..."
+if id "$1" &>/dev/null; then
+    echo "User : $appuser exist"
+else
+    echo "Create appuser"
+    sudo useradd -m -d /home/$appuser $appuser
+    sudo chown -R $appuser:$appuser /opt/app
+fi
+
 echo "Creating superviosr config ..."
 set "s/{{APPUSER}}/$appuser/g" supervisor.conf > ldn-backend.conf
-sudo mv -f /etc/supervisor/conf.d/ldn-backend.conf
+sudo mv -f ldn-backend.conf /etc/supervisor/conf.d/ldn-backend.conf
 
 echo "Creating nginx config ..."
 echo "Adding domain $domain in nginx config"
@@ -49,5 +59,10 @@ echo "Give $appuser the ownership of the /opt/app/ldn-backend directory ..."
 sudo chown -R $appuser:$appuser /opt/app/ldn-backend
 echo "Copy static website ..."
 sudo cp -r ./frontend/dist /var/www/tools.bonjack.club/html
+
+echo "Update supervisor"
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl restart
 
 echo "Finished !"

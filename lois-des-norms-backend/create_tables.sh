@@ -28,3 +28,5 @@ sqlite3 $1 "CREATE TABLE \"roll\" (
     PRIMARY KEY (\"gameId\", \"rollNumber\"),
     FOREIGN KEY (\"gameId\") REFERENCES \"game\"(id)
 );"
+
+sudo chmod 644 $1

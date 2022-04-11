@@ -51,6 +51,8 @@ class GameManager {
       gameId: 0,
       nextRollTimer: 0,
       canRoll: true,
+      discordGuild: '',
+      discordGuildChannel: '',
     };
     this.roles = ["ADC", "MID", "JUNGLE", "SUPPORT", "TOP"];
     this.countDownId = undefined;

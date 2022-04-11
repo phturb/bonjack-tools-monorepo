@@ -1,6 +1,17 @@
-import { CircularProgress, Container, Grid, SelectChangeEvent, Typography } from "@mui/material";
+import {
+  CircularProgress,
+  Container,
+  Grid,
+  SelectChangeEvent,
+  Typography,
+} from "@mui/material";
 import { useEffect, useReducer, useState } from "react";
-import { emptyDiscordPlayer, emptyPlayer, MessageActions, Player } from "../helpers/loisDesNorms";
+import {
+  emptyDiscordPlayer,
+  emptyPlayer,
+  MessageActions,
+  Player,
+} from "../helpers/loisDesNorms";
 import AdditionalInformationBlock from "../components/LoisDesNorms/AdditionalInformationBlock";
 import Lobby from "../components/LoisDesNorms/Lobby";
 
@@ -17,14 +28,30 @@ interface LoisDesNormsState {
 }
 
 const LoisDesNorms = (props: LoisDesNormsProperties) => {
-  const [wsState, setWsState] = useState<{ ws: WebSocket | undefined }>({
+  const [wsState, setWsState] = useState<{
+    ws: WebSocket | undefined;
+  }>({
     ws: undefined,
   });
 
-  useEffect(() => {
+  const connectWs = () => {
+    let retryDelay = 1000;
     const ws = new WebSocket(
       process.env.REACT_APP_WEBSOCKET_ENDPOINT || "ws://localhost:3001/"
     );
+
+    const retryConnection = () => {
+      const { ws } = wsState;
+
+      if (!ws || ws.readyState === WebSocket.CLOSED) {
+        console.log("Reconnecting Socket ...");
+        connectWs();
+      }
+    };
+
+    ws.onopen = function (_) {
+      setWsState({ ws: ws });
+    };
 
     ws.onmessage = function (event) {
       const msg = JSON.parse(event.data);
@@ -33,12 +60,22 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
       }
     };
 
-    const newState = {
-      ws: ws,
+    ws.onerror = function (err) {
+      console.error("Socket encontered error: ", err, "Closing Socket");
+      ws.close();
     };
 
-    setWsState(newState);
-  }, []);
+    ws.onclose = function (evt) {
+      retryDelay += retryDelay;
+      console.log(
+        `Socket is closed. Attempting to reconnect in ${retryDelay / 1000}s`,
+        evt.reason
+      );
+      setTimeout(retryConnection, retryDelay);
+    };
+  };
+
+  useEffect(connectWs, [connectWs]);
 
   const [state, dispatch] = useReducer(
     (
@@ -92,7 +129,7 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
   };
 
   const cancel = (_: any) => {
-    wsState.ws?.send(JSON.stringify({ action: "cancel", content: undefined}));
+    wsState.ws?.send(JSON.stringify({ action: "cancel", content: undefined }));
   };
 
   const onPlayerChange = (event: SelectChangeEvent<string>, index: number) => {
@@ -116,23 +153,27 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
     }
   };
 
-  if(state.gameId < 0) {
+  if (state.gameId < 0) {
     <Container>
-      <Typography variant="h4" component="h4" align="center">Lois Des Norms</Typography>
+      <Typography variant="h4" component="h4" align="center">
+        Lois Des Norms
+      </Typography>
       <CircularProgress />
-    </Container>
+    </Container>;
   }
 
   return (
     <Container>
-      <Typography variant="h4" component="h4" align="center">Lois Des Norms</Typography>
+      <Typography variant="h4" component="h4" align="center">
+        Lois Des Norms
+      </Typography>
       <Grid
         container
         direction="row"
         justifyContent="center"
         alignItems="center"
         spacing={2}
-        style={{  maxWidth: "100%", minHeight: 440}}
+        style={{ maxWidth: "100%", minHeight: 440 }}
       >
         <Grid item>
           <Lobby

@@ -113,7 +113,8 @@ class GameManager {
       async (interaction: Interaction<CacheType>) => {
         if (
           interaction.isButton() &&
-          this.discordGameMessage?.id === interaction.message.id
+          this.discordGameMessage?.id === interaction.message.id &&
+          this.gameState.players.find(x => x.player && x.player.id === interaction.user.id)
         ) {
           if (interaction.customId === "roll_btn") {
             await this.roll();

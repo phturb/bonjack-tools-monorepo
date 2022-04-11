@@ -20,6 +20,8 @@ interface GameState {
   gameId: number;
   nextRollTimer: number;
   canRoll: boolean;
+  discordGuild: string,
+  discordGuildChannel: string,
 };
 
 const emptyDiscordPlayer = (): DiscordPlayer => {return { id: "", name: undefined };};

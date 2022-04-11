@@ -167,6 +167,12 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
       <Typography variant="h4" component="h4" align="center">
         Lois Des Norms
       </Typography>
+      <Typography variant="h5" component="h5" align="center">
+          Connected Server : {state.discordGuild}
+      </Typography>
+      <Typography variant="h5" component="h5" align="center">
+          Voice Channel : {state.discordGuildChannel}
+      </Typography>
       <Grid
         container
         direction="row"

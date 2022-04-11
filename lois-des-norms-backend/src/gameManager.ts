@@ -51,8 +51,8 @@ class GameManager {
       gameId: 0,
       nextRollTimer: 0,
       canRoll: true,
-      discordGuild: '',
-      discordGuildChannel: '',
+      discordGuild: "",
+      discordGuildChannel: "",
     };
     this.roles = ["ADC", "MID", "JUNGLE", "SUPPORT", "TOP"];
     this.countDownId = undefined;
@@ -99,6 +99,19 @@ class GameManager {
   }
 
   private registerDiscord() {
+    this.discordManager.discordClient.once("ready", () => {
+      this.discordManager
+        .getChannel()
+        .then((ch) => {
+          this.gameState.discordGuild = ch?.name ?? "";
+          this.gameState.discordGuildChannel = ch?.guild.name ?? "";
+          broadcast(this.webSocketServer, {
+            action: "updateState",
+            content: JSON.stringify(this.gameState),
+          });
+        })
+        .catch(console.warn);
+    });
     this.discordManager.discordClient.on(
       "voiceStateUpdate",
       async (oldState: VoiceState, newState: VoiceState) => {
@@ -116,7 +129,9 @@ class GameManager {
         if (
           interaction.isButton() &&
           this.discordGameMessage?.id === interaction.message.id &&
-          this.gameState.players.find(x => x.player && x.player.id === interaction.user.id)
+          this.gameState.players.find(
+            (x) => x.player && x.player.id === interaction.user.id
+          )
         ) {
           if (interaction.customId === "roll_btn") {
             await this.roll();

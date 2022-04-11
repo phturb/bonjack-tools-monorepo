@@ -117,6 +117,8 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
       nextRollTimer: 0,
       canRoll: false,
       availablePlayers: [emptyDiscordPlayer()],
+      discordGuild: '',
+      discordGuildChannel: ''
     }
   );
 

@@ -99,19 +99,7 @@ class GameManager {
   }
 
   private registerDiscord() {
-    this.discordManager.discordClient.once("ready", () => {
-      this.discordManager
-        .getChannel()
-        .then((ch) => {
-          this.gameState.discordGuild = ch?.name ?? "";
-          this.gameState.discordGuildChannel = ch?.guild.name ?? "";
-          broadcast(this.webSocketServer, {
-            action: "updateState",
-            content: JSON.stringify(this.gameState),
-          });
-        })
-        .catch(console.warn);
-    });
+    this.discordManager.discordClient.on("ready", () => {});
     this.discordManager.discordClient.on(
       "voiceStateUpdate",
       async (oldState: VoiceState, newState: VoiceState) => {
@@ -439,6 +427,9 @@ class GameManager {
   private async updatePlayerListFromDiscord() {
     const ch: VoiceChannel | null = await this.discordManager.getChannel();
     if (!ch) return;
+
+    this.gameState.discordGuild = ch?.name ?? "";
+    this.gameState.discordGuildChannel = ch?.guild.name ?? "";
     let newAvailablePlayers: any = { "": undefined };
     for (const [id, m] of ch.members) {
       if (m.nickname) {

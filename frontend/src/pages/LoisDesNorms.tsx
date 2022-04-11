@@ -75,7 +75,7 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
     };
   };
 
-  useEffect(connectWs, [connectWs]);
+  useEffect(connectWs, []);
 
   const [state, dispatch] = useReducer(
     (

@@ -227,3 +227,43 @@ func DeleteCategory(name string) (err error) {
     }
     return
 }
+
+func UpdateExpense(expense *Expenses) (err error) {
+    err = fmt.Errorf("NOT IMPLEMENTED")
+    return
+}
+
+func GetUsersExpenses(billId uint, expenseId uint) (usersExpenses []UsersExpenses, err error) {
+    err = fmt.Errorf("NOT IMPLEMENTED")
+    return
+}
+
+func GetUserExpense(billId uint, expenseId uint, userId uint) (userExpense UsersExpenses, err error) {
+    err = fmt.Errorf("NOT IMPLEMENTED")
+    return
+}
+
+func VerifyUserExpenseBillId(billId uint, expenseId uint, userId uint) (err error) {
+    err = fmt.Errorf("NOT IMPLEMENTED")
+    return
+}
+
+func UpdateUserExpense(userExpense *UsersExpenses) (err error) {
+    err = fmt.Errorf("NOT IMPLEMENTED")
+    return
+}
+
+func UpdateBill(bill *Bills) (err error) {
+    err = fmt.Errorf("NOT IMPLEMENTED")
+    return
+}
+
+func UpdateUser(user *Users) (err error) {
+    err = fmt.Errorf("NOT IMPLEMENTED")
+    return
+}
+
+func GetExpense(billId uint, expenseId uint) (expense Expenses, err error) {
+    err= fmt.Errorf("NOT IMPLEMENTED")
+    return
+}

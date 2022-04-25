@@ -160,45 +160,205 @@ func GETBills_billId_Expenses(c *gin.Context) {
 }
 
 func PUTBills_billId(c *gin.Context) {
-    _, err := parseParamId("billId", c)
+    billId, err := parseParamId("billId", c)
     if err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
-
-    // TODO : Update expenses
-
+    var bill Bills
+    if err := c.ShouldBindJSON(&bill); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error() })
+        return
+    }
+    bill.ID = billId
+    err = UpdateBill(&bill)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+    }
     c.String(http.StatusOK, "NOT IMPLEMENTED")
     return
 }
 
 func PUTBills_billId_Users_userId(c *gin.Context) {
+    billId, err := parseParamId("billId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    userId, err := parseParamId("userId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    var user Users
+    if err := c.ShouldBindJSON(&user); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    user.BillID = billId
+    user.ID = userId
+
+    err = UpdateUser(&user)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
     c.String(http.StatusOK, "NOT IMPLEMENTED")
     return
 }
 func GETBills_billId_Expenses_expenseId(c *gin.Context) {
+    billId, err := parseParamId("billId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    expenseId, err := parseParamId("expenseId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    _, err = GetExpense(billId, expenseId)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
     c.String(http.StatusOK, "NOT IMPLEMENTED")
     return
 }
 func PUTBills_billId_Expenses_expenseId(c *gin.Context) {
+    billId, err := parseParamId("billId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    expenseId, err := parseParamId("expenseId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    var expense Expenses
+    if err := c.ShouldBindJSON(&expense); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    expense.BillID = billId
+    expense.ID = expenseId
+
+    err = UpdateExpense(&expense)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
     c.String(http.StatusOK, "NOT IMPLEMENTED")
     return
 }
 func GETBills_billId_Expenses_expenseId_UsersExpenses(c *gin.Context) {
+    billId, err := parseParamId("billId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    expenseId, err := parseParamId("expenseId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    _, err = GetUsersExpenses(billId, expenseId)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
     c.String(http.StatusOK, "NOT IMPLEMENTED")
     return
 }
 func GETBills_billId_Expenses_expenseId_UsersExpenses_userId(c *gin.Context) {
+    billId, err := parseParamId("billId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    expenseId, err := parseParamId("expenseId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    userId, err := parseParamId("userId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    _, err = GetUserExpense(billId, expenseId, userId)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
     c.String(http.StatusOK, "NOT IMPLEMENTED")
     return
 }
 func PUTBills_billId_Expenses_expenseId_UsersExpenses_userId(c *gin.Context) {
+    billId, err := parseParamId("billId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    expenseId, err := parseParamId("expenseId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    userId, err := parseParamId("userId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    var userExpense UsersExpenses
+    if err := c.ShouldBindJSON(&userExpense); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    err = VerifyUserExpenseBillId(billId, expenseId, userId)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    userExpense.UserID = userId
+    userExpense.ExpenseID = expenseId
+
+    err = UpdateUserExpense(&userExpense)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+    }
+
     c.String(http.StatusOK, "NOT IMPLEMENTED")
     return
 }
 
 func DELETEBills_billId_Expenses_expenseId(c *gin.Context) {
-    c.String(http.StatusOK, "NOT IMPLEMENTED")
+    billId, err := parseParamId("billId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    expenseId, err := parseParamId("expenseId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    err = DeleteExpense(billId, expenseId)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    c.JSON(http.StatusNoContent, nil)
     return
 }
 
@@ -253,12 +413,26 @@ func POSTCategories(c *gin.Context) {
     return
 }
 
+func DELETECategories_categoryName(c *gin.Context) {
+    name := c.Param("categoryName")
+    if name == "" {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Missing param"})
+        return
+    }
+
+    err := DeleteCategory(name)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    c.JSON(http.StatusNoContent, nil)
+    return
+}
+
 func RegisterCategoriesRoutes(router *gin.Engine) {
     router.GET("/categories", GETCategories)
 
     router.POST("/categories", POSTCategories)
 
-    router.DELETE("/categories/:categoryName", func(c *gin.Context) {
-        c.String(http.StatusOK, "NOT IMPLEMENTED")
-    })
+    router.DELETE("/categories/:categoryName", DELETECategories_categoryName)
 }

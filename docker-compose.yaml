@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    volumes:
+      - /app/node_modules
+    ports:
+      - 3000:80
+    environment:
+      - REACT_APP_WEBSOCKET_ENDPOINT="wss://${DOMAIN}/ws"
+      - REACT_APP_HTTP_ENDPOINT="https://${DOMAIN}/api"
+  lois-des-norms-backend:
+    container_name: lois-des-norms-backend
+    build:
+      context: ./lois-des-norms-backend/
+      dockerfile: Dockerfile
+    volumes:
+      - /app/node_modules
+      - ./data:/data
+    ports:
+      - 3001:3001
+    environment:
+      - PORT=3001
+      - CHANNEL_ID=212369829582077953
+      - TEXT_CHANNEL_ID=212369747973636097
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DATABASE_URL=file:/data/ldn-prod.db
+  expense-manager-backend:
+    container_name: expense-manager-backend
+    build:
+      context: ./expense-manager-backend
+      dockerfile: Dockerfile
+    ports:
+      - 3030:3030
+    volumes:
+        - ./data:/data
+    environment:
+      - DATABASE_PATH=/data/em-prod.db
+      - PORT=3030

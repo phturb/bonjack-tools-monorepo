@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 3000:3000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_WEBSOCKET_ENDPOINT="ws://localhost:3001/"
+      - REACT_APP_HTTP_ENDPOINT="https://tools.bonjack.club/api"
+  lois-des-norms-backend:
+    container_name: lois-des-norms-backend
+    build:
+      context: ./lois-des-norms-backend/
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./lois-des-norms-backend/:/app
+      - /app/node_modules
+    ports:
+      - 3001:3001
+    environment:
+      - PORT=3001
+      - CHANNEL_ID=212369829582077953
+      - TEXT_CHANNEL_ID=212369747973636097
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DATABASE_URL=file:/app/dev.db
+  expense-manager-backend:
+    container_name: expense-manager-backend
+    image: cosmtrek/air
+    working_dir: /usr/src/app
+    ports:
+      - 3030:3030
+    volumes:
+        - ./expense-manager-backend/:/usr/src/app
+    environment:
+      - DATABASE_PATH=./em-test.db
+

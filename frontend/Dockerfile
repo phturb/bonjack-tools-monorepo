@@ -1,11 +1,18 @@
-FROM node:alpine
+# build environment
+FROM node:alpine as build
 WORKDIR /app
-COPY package.json /app
-COPY package-lock.json /app
-COPY ./ /app
-RUN npm install -g typescript
-RUN npm install -g ts-node
-RUN npm i
+ENV PATH /app/node_modules/.bin:$PATH
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm i --silent
+RUN npm install -g --silent typescript \
+                            ts-node
+COPY . ./
 RUN npm run build
-USER node
-CMD ["npm", "run", "start"]
+
+# production environment
+FROM nginx:stable-alpine
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+

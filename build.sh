@@ -9,7 +9,7 @@ rm release.tar.gz
 cd ./lois-des-norms-backend
 echo "Building lois-des-norms-backend server ..."
 npm install
-npx prisma generate
+npx prisma migrate dev --name build-server
 npm run build
 cd ..
 

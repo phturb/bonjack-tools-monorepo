@@ -12,7 +12,7 @@ sudo rm -rf /opt/app/ldn-backend
 cd ./lois-des-norms-backend
 echo "Building lois-des-norms-backend server ..."
 npm install
-npx prisma generate
+npx prisma migate dev --name update-server
 npm run build
 cd ..
 

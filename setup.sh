@@ -83,9 +83,8 @@ sudo nginx -s reload
 
 cd ./lois-des-norms-backend
 echo "Building lois-des-norms-backend server ..."
-./create_tables.sh ldn-dev.db
 npm install
-npx prisma generate
+npx prisma migrate dev --name init-server
 npm run build
 cd ..
 

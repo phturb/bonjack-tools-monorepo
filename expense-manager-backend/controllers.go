@@ -74,6 +74,25 @@ func GETBills_billId_Users(c *gin.Context) {
     c.JSON(http.StatusOK, users)
     return
 }
+func GETBills_billId_Users_userId(c *gin.Context) {
+    billId, err := parseParamId("billId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error() })
+        return
+    }
+    userId, err := parseParamId("userId", c)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error() })
+        return
+    }
+    user, err := GetUser(billId, userId)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error() })
+        return
+    }
+
+    c.JSON(http.StatusOK, user)
+}
 
 func POSTBills_billId_Users(c *gin.Context) {
     billId, err := parseParamId("billId", c)
@@ -372,6 +391,7 @@ func RegisterBillsRoutes(router *gin.Engine) {
 
     router.GET("/bills/:billId/users", GETBills_billId_Users)
     router.POST("/bills/:billId/users", POSTBills_billId_Users)
+    router.GET("/bills/:billId/users/:userId", GETBills_billId_Users_userId)
     router.PUT("/bills/:billId/users/:userId", PUTBills_billId_Users_userId)
     router.DELETE("/bills/:billId/users/:userId", DELETEBills_billId_Users_userId)
 

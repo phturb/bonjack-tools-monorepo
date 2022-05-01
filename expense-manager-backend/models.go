@@ -77,6 +77,7 @@ type UserExpense struct {
 type UsersExpenses struct {
     ExpenseID uint `gorm:"primaryKey;autoIncrement:false" json:"expenseID"`
     UserID uint `gorm:"primaryKey;autoIncrement:false" json:"userID"`
+    User Users `gorm:"foreignKey:UserID;references:ID" json:"user"`
     Proportion uint `json:"proportion"`
 }
 

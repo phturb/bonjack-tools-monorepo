@@ -11,7 +11,7 @@ func CreateBill(name string) (bills Bills, err error) {
 }
 
 func GetBill(ID uint) (bills Bills, err error) {
-    err = db.Model(&Bills{}).Preload("Users").First(&bills, ID).Error
+    err = db.Model(&Bills{}).Preload("Users").Preload("Expenses").First(&bills, ID).Error
     return
 }
 
@@ -47,6 +47,10 @@ func GetUsersFromBill(billID uint) (users []Users, err error) {
     err = db.Where("bill_id = ?", billID).Find(&users).Error
     return
 }
+func GetUser(billId uint, userId uint) (user Users, err error) {
+    err = db.Model(&Users{}).Where("bill_id = ? and id = ?", billId, userId).Preload("UsersExpenses").First(&user).Error
+    return
+}
 
 func CreateUser(billID uint, nickname string, fullName string, isLateAddition bool) (users Users, err error) {
     users.Nickname = nickname
@@ -57,7 +61,7 @@ func CreateUser(billID uint, nickname string, fullName string, isLateAddition bo
         return
     }
     var expenses []Expenses
-    err = db.Where("bill_id = ?").Find(&expenses).Error
+    err = db.Where("bill_id = ?", billID).Find(&expenses).Error
     if err != nil {
         return
     }
@@ -76,6 +80,7 @@ func CreateUser(billID uint, nickname string, fullName string, isLateAddition bo
         }
     }
 
+    err = db.Model(&Users{}).Preload("UsersExpenses").Where("id = ?", users.ID).First(&users).Error
     return
 }
 
@@ -125,7 +130,7 @@ func CreateExpense(billID uint, name string, description string, price int, paye
 }
 
 func GetExpenses(billID uint) (expenses []Expenses, err error) {
-    err = db.Where(map[string]interface{}{"bill_ID": billID}).Preload("Users").Preload("UsersExpenses").Find(&expenses).Error
+    err = db.Where(map[string]interface{}{"bill_ID": billID}).Preload("Categories").Preload("PayedByUser").Preload("UsersExpenses").Find(&expenses).Error
     return
 }
 
@@ -229,17 +234,17 @@ func DeleteCategory(name string) (err error) {
 }
 
 func UpdateExpense(expense *Expenses) (err error) {
-    err = fmt.Errorf("NOT IMPLEMENTED")
+    err = db.Save(expense).Error
     return
 }
 
 func GetUsersExpenses(billId uint, expenseId uint) (usersExpenses []UsersExpenses, err error) {
-    err = fmt.Errorf("NOT IMPLEMENTED")
+    err = db.Model(&UsersExpenses{}).Where("bill_id = ? AND expense_id = ?", billId, expenseId).Find(&usersExpenses).Error
     return
 }
 
 func GetUserExpense(billId uint, expenseId uint, userId uint) (userExpense UsersExpenses, err error) {
-    err = fmt.Errorf("NOT IMPLEMENTED")
+    err = db.Model(&UsersExpenses{}).Where("bill_id = ? and expense_id = ? and user_id = ?", billId, expenseId, userId).First(&userExpense).Error
     return
 }
 
@@ -249,21 +254,21 @@ func VerifyUserExpenseBillId(billId uint, expenseId uint, userId uint) (err erro
 }
 
 func UpdateUserExpense(userExpense *UsersExpenses) (err error) {
-    err = fmt.Errorf("NOT IMPLEMENTED")
+    err = db.Save(userExpense).Error
     return
 }
 
 func UpdateBill(bill *Bills) (err error) {
-    err = fmt.Errorf("NOT IMPLEMENTED")
+    err = db.Save(bill).Error
     return
 }
 
 func UpdateUser(user *Users) (err error) {
-    err = fmt.Errorf("NOT IMPLEMENTED")
+    err = db.Save(user).Error
     return
 }
 
 func GetExpense(billId uint, expenseId uint) (expense Expenses, err error) {
-    err= fmt.Errorf("NOT IMPLEMENTED")
+    err = db.Model(&Expenses{}).Where("bill_id = ? and expense_id = ?", billId, expenseId).First(&expense).Error
     return
 }

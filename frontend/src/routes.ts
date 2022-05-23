@@ -1,4 +1,4 @@
-import { Home, LoisDesNorms, LunaBot, CryptoTracker } from "./pages";
+import { Home, LoisDesNorms, LunaBot, CryptoTracker, ExpenseManager } from "./pages";
 import OtherProjects from "./pages/OtherProjects";
 
 export const homeRoute = {name: 'Home', path: '/', element: Home};
@@ -6,23 +6,25 @@ export const loisDesNormsRoute = {name: 'LoisDesNorms', path: '/lois-des-norms',
 export const cryptoTracker = {name: 'Crypto Tracker', path: '/crypto-tracker', element: CryptoTracker};
 export const lunaBot = {name: 'Luna Bot', path: '/luna-bot', element: LunaBot}
 export const otherProjects = {name: 'Other Projects', path: '/other-projects', element: OtherProjects};
+export const expensesTracker = {name: 'Expense Tracker', path: '/expense-tracker', element: ExpenseManager};
 
 export const routes = [
     homeRoute,
     loisDesNormsRoute,
+    expensesTracker,
     cryptoTracker,
     lunaBot,
     otherProjects,
-]
+];
 
 export const cryptoRoutes = {
     name: "Crypto", routes: [
         cryptoTracker, lunaBot
     ]
-}
+};
 
 export const gamesToolRoutes = {
     name: "Games Tool", routes: [
         loisDesNormsRoute
     ]
-}
+};

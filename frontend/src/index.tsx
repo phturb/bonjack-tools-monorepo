@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import reportWebVitals from "./reportWebVitals";
 import { Header, Footer } from "./components";
-import { Home, LoisDesNorms, LunaBot } from "./pages";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";

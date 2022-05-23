@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_HTTP_ENDPOINT } from "../config/config";
 
 export interface Tx {
     txHash: string,
@@ -13,4 +14,6 @@ export interface Tx {
     cointTypeOut: string
 }
 
-export const getTxs = (): Promise<Tx[]> => axios.get<Tx[]>(`${process.env.REACT_APP_HTTP_ENDPOINT || 'http://tools.bonjack.club/api'}/txs`).then((res) => res.data);
+type GetTxs = () => Promise<Tx[]>;
+
+export const getTxs: GetTxs = () => axios.get<Tx[]>(`${API_HTTP_ENDPOINT}/txs`).then((res) => res.data);

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useState } from "react";
-import { cryptoRoutes, gamesToolRoutes, homeRoute, otherProjects, routes } from "../routes";
+import { cryptoRoutes, gamesToolRoutes, homeRoute, expensesTracker, otherProjects, routes } from "../routes";
 import { Link as RouterLink } from "react-router-dom";
 
 export type NavBarProperties = {};
@@ -140,6 +140,7 @@ const NavBar = (props: NavBarProperties) => {
               >
                 {gamesToolRoutes.routes.map(menuItemNavGenerator)}
               </Menu>
+              {buttonNavGenerator(expensesTracker)}
               {buttonNavGenerator(otherProjects)}
             </Box>
           </Toolbar>

@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Button,
   Box,
@@ -20,7 +21,7 @@ export interface LobbyProperties {
   roll: (_: any) => void;
   cancel: (_: any) => void;
   onPlayerChange: (event: SelectChangeEvent<string>, index: number) => void;
-};
+}
 
 const Lobby = (props: LobbyProperties) => {
   console.log(props);

@@ -1,8 +1,7 @@
+import React from 'react';
 import { Box, Container, Typography } from "@mui/material";
 
-export type HomeProperties = {};
-
-const Home = (props: HomeProperties) => {
+const Home = () => {
     return (<Container>
         <Typography variant="h4" component="h4" align="center">Home</Typography>
         <Box>

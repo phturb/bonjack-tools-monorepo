@@ -1,5 +1,5 @@
+import React, {useState} from 'react';
 import { Paper, Tabs, Tab, Box } from "@mui/material";
-import { useState } from "react";
 import Rules from "./Rules";
 import Stats from "./Stats";
 

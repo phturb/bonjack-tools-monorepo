@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AppBar,
   Box,
@@ -14,9 +15,7 @@ import { useState } from "react";
 import { cryptoRoutes, gamesToolRoutes, homeRoute, expensesTracker, otherProjects, routes } from "../routes";
 import { Link as RouterLink } from "react-router-dom";
 
-export type NavBarProperties = {};
-
-const NavBar = (props: NavBarProperties) => {
+const NavBar = () => {
   const [anchorElNav, setAnchorElNav] = useState<HTMLElement | null>(null);
   const [anchorElCrypto, setAnchorElCrypto] = useState<HTMLElement | null>(null);
   const [anchorElGames, setAnchorElGames] = useState<HTMLElement | null>(null);

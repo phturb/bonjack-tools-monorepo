@@ -1,3 +1,4 @@
+import React from 'react';
 import { Container, Divider, List, Typography, Paper, CircularProgress } from "@mui/material";
 import axios from "axios";
 import { useQuery } from "react-query";
@@ -25,7 +26,7 @@ const queryCryptos = async () => {
 
 }
 
-const CryptoTracker = (props: {}) => {
+const CryptoTracker = () => {
 
     const cryptos = useQuery("cryptos", queryCryptos, { refetchInterval: 120000 });
     let data;

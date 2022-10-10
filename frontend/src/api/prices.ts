@@ -8,7 +8,7 @@ export interface Prices {
         lunaPrice: number,
         ustGasPrice: number,
         lunaGasPrice: number
-    };
+    }
 
 type GetPrices = () => Promise<Prices[]>;
 

@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Paper,
   Table,
@@ -26,9 +27,7 @@ import { getLoops } from "../api/loops";
 import { getTxs, Tx } from "../api/txs";
 import moment from "moment";
 
-export type LunaBotProperties = {};
-
-const LunaBot = (props: LunaBotProperties) => {
+const LunaBot = () => {
 
   const query = useQuery("data-luna", async () => {
     const txs = await getTxs();

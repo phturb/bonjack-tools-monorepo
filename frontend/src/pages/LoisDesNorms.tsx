@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   CircularProgress,
   Container,
@@ -7,6 +8,7 @@ import {
 } from "@mui/material";
 import { useEffect, useReducer, useState } from "react";
 import {
+  DiscordPlayer,
   emptyDiscordPlayer,
   emptyPlayer,
   MessageActions,
@@ -15,19 +17,17 @@ import {
 import AdditionalInformationBlock from "../components/LoisDesNorms/AdditionalInformationBlock";
 import Lobby from "../components/LoisDesNorms/Lobby";
 
-export type LoisDesNormsProperties = {};
-
 interface LoisDesNormsState {
   players: Player[];
   rollCount: number;
   gameInProgress: boolean;
-  availablePlayers: any;
+  availablePlayers: Record<string, DiscordPlayer>;
   gameId: number;
   nextRollTimer: number;
   canRoll: boolean;
 }
 
-const LoisDesNorms = (props: LoisDesNormsProperties) => {
+const LoisDesNorms = () => {
   const [wsState, setWsState] = useState<{
     ws: WebSocket | undefined;
   }>({
@@ -49,6 +49,7 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
       }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ws.onopen = function (_) {
       setWsState({ ws: ws });
     };
@@ -80,11 +81,11 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
   const [state, dispatch] = useReducer(
     (
       state: LoisDesNormsState,
-      message: { action: MessageActions; content: any }
+      message: { action: MessageActions; content: Player[] | string }
     ) => {
       switch (message.action) {
         case "updatePlayers": {
-          const newPlayers = message.content;
+          const newPlayers = message.content as Player[];
           const newState = { ...state, players: newPlayers };
           const players = newPlayers.map((x: Player) => x.player);
           wsState.ws?.send(
@@ -96,7 +97,7 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
           return newState;
         }
         case "updateState": {
-          const newState = JSON.parse(message.content);
+          const newState = JSON.parse(message.content as string);
           newState.availablePlayers[""] = { name: undefined, stat: {} };
           return newState;
         }
@@ -122,15 +123,18 @@ const LoisDesNorms = (props: LoisDesNormsProperties) => {
     }
   );
 
-  const reset = (_: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const reset = (_: unknown) => {
     wsState.ws?.send(JSON.stringify({ action: "reset", content: undefined }));
   };
 
-  const roll = (_: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const roll = (_: unknown) => {
     wsState.ws?.send(JSON.stringify({ action: "roll", content: undefined }));
   };
 
-  const cancel = (_: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const cancel = (_: unknown) => {
     wsState.ws?.send(JSON.stringify({ action: "cancel", content: undefined }));
   };
 

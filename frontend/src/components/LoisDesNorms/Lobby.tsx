@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Button,
   Box,
@@ -26,10 +26,16 @@ export interface LobbyProperties {
 const Lobby = (props: LobbyProperties) => {
   console.log(props);
   return (
-    <Paper style={{ margin: '10' }}>
-      <Stack component="form" sx={{
-        width: 320, padding: "10px", minHeight: "446px"
-      }} spacing={2}>
+    <Paper style={{ margin: "10" }}>
+      <Stack
+        component="form"
+        sx={{
+          width: 320,
+          padding: "10px",
+          minHeight: "446px",
+        }}
+        spacing={2}
+      >
         <Box>
           <Typography component="h5" variant="h5">
             Roll count : {props.rollCount}
@@ -56,9 +62,19 @@ const Lobby = (props: LobbyProperties) => {
             Finish
           </Button>
 
-          {props.canRoll ? (<Button variant="contained" onClick={props.roll} disabled={!props.canRoll}>
-            Roll
-          </Button>) : (<Box><Countdown date={Date.now() + props.nextRollTimer}></Countdown></Box>)}
+          {props.canRoll ? (
+            <Button
+              variant="contained"
+              onClick={props.roll}
+              disabled={!props.canRoll}
+            >
+              Roll
+            </Button>
+          ) : (
+            <Box>
+              <Countdown date={Date.now() + props.nextRollTimer}></Countdown>
+            </Box>
+          )}
         </Stack>
       </Stack>
     </Paper>

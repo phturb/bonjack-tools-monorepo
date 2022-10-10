@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Grid,
   FormControl,
@@ -9,11 +9,11 @@ import {
   SelectChangeEvent,
   Avatar,
 } from "@mui/material";
-import topThumb from '../../img/Position_TOP.png';
-import adcThumb from '../../img/Position_ADC.png';
-import supportThumb from '../../img/Position_SUPPORT.png';
-import midThumb from '../../img/Position_MID.png';
-import jungleThumb from '../../img/Position_JUNGLE.png';
+import topThumb from "../../img/Position_TOP.png";
+import adcThumb from "../../img/Position_ADC.png";
+import supportThumb from "../../img/Position_SUPPORT.png";
+import midThumb from "../../img/Position_MID.png";
+import jungleThumb from "../../img/Position_JUNGLE.png";
 
 export interface PlayerInfoProperties {
   index: number;
@@ -35,8 +35,8 @@ const PlayerInfo = (props: PlayerInfoProperties) => {
     ADC: adcThumb,
     SUPPORT: supportThumb,
     MID: midThumb,
-    JUNGLE: jungleThumb, 
-  }
+    JUNGLE: jungleThumb,
+  };
 
   return (
     <Grid
@@ -71,7 +71,14 @@ const PlayerInfo = (props: PlayerInfoProperties) => {
         </FormControl>
       </Grid>
       <Grid item xs="auto">
-        {role && <Chip sx={{width:"105px"}} label={role} avatar={<Avatar alt={role} src={(imgs as any)[role]} />} variant="outlined" />}
+        {role && (
+          <Chip
+            sx={{ width: "105px" }}
+            label={role}
+            avatar={<Avatar alt={role} src={(imgs as any)[role]} />}
+            variant="outlined"
+          />
+        )}
       </Grid>
     </Grid>
   );

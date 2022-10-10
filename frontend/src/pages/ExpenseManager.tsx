@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 const ExpenseManager = () => {
-    return (<></>);
+  return <></>;
 };
 
 export default ExpenseManager;

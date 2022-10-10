@@ -5,4 +5,11 @@ import CryptoTracker from "./CryptoTracker";
 import ExpenseManager from "./ExpenseManager";
 import OtherProjects from "./OtherProjects";
 
-export { Home, LoisDesNorms, LunaBot, CryptoTracker, ExpenseManager, OtherProjects };
+export {
+  Home,
+  LoisDesNorms,
+  LunaBot,
+  CryptoTracker,
+  ExpenseManager,
+  OtherProjects,
+};

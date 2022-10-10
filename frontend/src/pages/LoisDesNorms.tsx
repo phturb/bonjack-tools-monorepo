@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   CircularProgress,
   Container,
@@ -118,8 +118,8 @@ const LoisDesNorms = () => {
       nextRollTimer: 0,
       canRoll: false,
       availablePlayers: [emptyDiscordPlayer()],
-      discordGuild: '',
-      discordGuildChannel: ''
+      discordGuild: "",
+      discordGuildChannel: "",
     }
   );
 
@@ -174,10 +174,10 @@ const LoisDesNorms = () => {
         Lois Des Norms
       </Typography>
       <Typography variant="h5" component="h5" align="center">
-          Connected Server : {state.discordGuild}
+        Connected Server : {state.discordGuild}
       </Typography>
       <Typography variant="h5" component="h5" align="center">
-          Voice Channel : {state.discordGuildChannel}
+        Voice Channel : {state.discordGuildChannel}
       </Typography>
       <Grid
         container

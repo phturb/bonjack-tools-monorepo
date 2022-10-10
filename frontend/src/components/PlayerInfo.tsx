@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 import { LeagueOfLegendsRole } from "../helpers/loisDesNorms";
-import { Chip, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 
 export type PlayerInfoProperties = {
   index: number;
@@ -26,7 +26,6 @@ const PlayerInfo = (props: PlayerInfoProperties) => {
           readOnly: !props.editable,
         }}
       />
-
     </div>
   );
 };

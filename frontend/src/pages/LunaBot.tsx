@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Paper,
   Table,
@@ -28,55 +28,63 @@ import { getTxs, Tx } from "../api/txs";
 import moment from "moment";
 
 const LunaBot = () => {
-
   const query = useQuery("data-luna", async () => {
     const txs = await getTxs();
     const prices = await getPrices();
     const loops = await getLoops();
-    return {txs, prices, loops};
+    return { txs, prices, loops };
   });
 
-
   if (query.isLoading) {
-    return (<Container>
-      <Typography variant="h4" component="h4" align="center">Luna Bot</Typography>
-      <CircularProgress />
-    </Container>);
+    return (
+      <Container>
+        <Typography variant="h4" component="h4" align="center">
+          Luna Bot
+        </Typography>
+        <CircularProgress />
+      </Container>
+    );
   }
 
   if (query.isError) {
-    console.log(query.error)
-    return <Container>
-      <Typography variant="h4" component="h4" align="center">Luna Bot</Typography>
-      <Typography>Something went wrong: {(query.error as any).message} !</Typography>
-    </Container>
+    console.log(query.error);
+    return (
+      <Container>
+        <Typography variant="h4" component="h4" align="center">
+          Luna Bot
+        </Typography>
+        <Typography>
+          Something went wrong: {(query.error as any).message} !
+        </Typography>
+      </Container>
+    );
   }
 
   if (!query.data) {
-    return (<Container>
-      <Typography variant="h4" component="h4" align="center">Luna Bot</Typography>
-      <Typography>No data !</Typography>
-    </Container>)
+    return (
+      <Container>
+        <Typography variant="h4" component="h4" align="center">
+          Luna Bot
+        </Typography>
+        <Typography>No data !</Typography>
+      </Container>
+    );
   }
 
   return (
     <Container>
-      <Typography variant="h4" component="h4" align="center">Luna Bot</Typography>
+      <Typography variant="h4" component="h4" align="center">
+        Luna Bot
+      </Typography>
       <Grid container>
         <Grid item>
-          <Paper >
-            {(query.data.loops as any[]).length}
-          </Paper>
+          <Paper>{(query.data.loops as any[]).length}</Paper>
         </Grid>
         <Grid item>
-          <Paper >
-            {(query.data.txs as any[]).length}
-          </Paper>
+          <Paper>{(query.data.txs as any[]).length}</Paper>
         </Grid>
         <Grid item>
-          <Paper >
-            {(query.data.prices as any[]).length}
-          </Paper>
+          <Paper>{(query.data.prices as any[]).length}</Paper>
         </Grid>
       </Grid>
 

@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
 const BillsList = () => {
-    return (<></>);
-}
+  return <></>;
+};
 
 export default BillsList;

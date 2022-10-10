@@ -1,6 +1,6 @@
 export type LeagueOfLegendsRole = "ADC" | "MID" | "JUNGLE" | "SUPPORT" | "TOP";
 
-export type MessageActions = 'updatePlayers' | 'updateState';
+export type MessageActions = "updatePlayers" | "updateState";
 
 export interface Player {
   player: DiscordPlayer;
@@ -12,6 +12,10 @@ export interface DiscordPlayer {
   name: string | undefined;
 }
 
-export const emptyDiscordPlayer = (): DiscordPlayer => {return { id: "", name: undefined };};
+export const emptyDiscordPlayer = (): DiscordPlayer => {
+  return { id: "", name: undefined };
+};
 
-export const emptyPlayer = (): Player => {return {player: emptyDiscordPlayer(), role: undefined};};
+export const emptyPlayer = (): Player => {
+  return { player: emptyDiscordPlayer(), role: undefined };
+};

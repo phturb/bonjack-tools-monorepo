@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   AppBar,
   Box,
@@ -12,46 +12,66 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useState } from "react";
-import { cryptoRoutes, gamesToolRoutes, homeRoute, expensesTracker, otherProjects, routes } from "../routes";
+import {
+  cryptoRoutes,
+  gamesToolRoutes,
+  homeRoute,
+  expensesTracker,
+  otherProjects,
+  routes,
+} from "../routes";
 import { Link as RouterLink } from "react-router-dom";
 
 const NavBar = () => {
   const [anchorElNav, setAnchorElNav] = useState<HTMLElement | null>(null);
-  const [anchorElCrypto, setAnchorElCrypto] = useState<HTMLElement | null>(null);
+  const [anchorElCrypto, setAnchorElCrypto] = useState<HTMLElement | null>(
+    null
+  );
   const [anchorElGames, setAnchorElGames] = useState<HTMLElement | null>(null);
 
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>, anchorSet: (value: React.SetStateAction<HTMLElement | null>) => void ) => {
+  const handleOpenUserMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    anchorSet: (value: React.SetStateAction<HTMLElement | null>) => void
+  ) => {
     anchorSet(event.currentTarget);
   };
 
-  const handleCloseNavMenu = (anchorSet: (value: React.SetStateAction<HTMLElement | null>) => void ) => {
+  const handleCloseNavMenu = (
+    anchorSet: (value: React.SetStateAction<HTMLElement | null>) => void
+  ) => {
     anchorSet(null);
   };
 
-  const buttonNavGenerator = (route: { name: string, path: string }) => {
+  const buttonNavGenerator = (route: { name: string; path: string }) => {
     return (
       <Button
         component={RouterLink}
         to={route.path}
         key={route.name + "-nav"}
-        onClick={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElNav)}}
+        onClick={(event: React.MouseEvent<HTMLElement>) => {
+          handleCloseNavMenu(setAnchorElNav);
+        }}
         sx={{ my: 2, color: "white", display: "block" }}
       >
         {route.name}
       </Button>
     );
-  }
+  };
 
-  const menuItemNavGenerator = (route: { name: string, path: string }) => {
-    return (<MenuItem
-      key={route.name + "-nav"}
-      component={RouterLink}
-      to={route.path}
-      onClick={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElNav)}}
-    >
-      <Typography textAlign="center">{route.name}</Typography>
-    </MenuItem>);
-  }
+  const menuItemNavGenerator = (route: { name: string; path: string }) => {
+    return (
+      <MenuItem
+        key={route.name + "-nav"}
+        component={RouterLink}
+        to={route.path}
+        onClick={(event: React.MouseEvent<HTMLElement>) => {
+          handleCloseNavMenu(setAnchorElNav);
+        }}
+      >
+        <Typography textAlign="center">{route.name}</Typography>
+      </MenuItem>
+    );
+  };
 
   return (
     <Box>
@@ -70,9 +90,10 @@ const NavBar = () => {
               <IconButton
                 size="large"
                 color="inherit"
-                onClick={(event: React.MouseEvent<HTMLElement> ) => {handleOpenUserMenu(event, setAnchorElNav)}}
+                onClick={(event: React.MouseEvent<HTMLElement>) => {
+                  handleOpenUserMenu(event, setAnchorElNav);
+                }}
               >
-
                 <MenuIcon />
               </IconButton>
               <Menu
@@ -84,11 +105,12 @@ const NavBar = () => {
                 keepMounted
                 anchorEl={anchorElNav}
                 open={Boolean(anchorElNav)}
-                onClose={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElNav)}}
+                onClose={(event: React.MouseEvent<HTMLElement>) => {
+                  handleCloseNavMenu(setAnchorElNav);
+                }}
               >
                 {routes.map(menuItemNavGenerator)}
               </Menu>
-
             </Box>
             <Typography
               variant="h6"
@@ -101,8 +123,10 @@ const NavBar = () => {
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
               {buttonNavGenerator(homeRoute)}
 
-                <Button
-                onClick={(event: React.MouseEvent<HTMLElement> ) => {handleOpenUserMenu(event, setAnchorElCrypto)}}
+              <Button
+                onClick={(event: React.MouseEvent<HTMLElement>) => {
+                  handleOpenUserMenu(event, setAnchorElCrypto);
+                }}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
                 {cryptoRoutes.name}
@@ -116,12 +140,16 @@ const NavBar = () => {
                 keepMounted
                 anchorEl={anchorElCrypto}
                 open={Boolean(anchorElCrypto)}
-                onClose={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElCrypto)}}
+                onClose={(event: React.MouseEvent<HTMLElement>) => {
+                  handleCloseNavMenu(setAnchorElCrypto);
+                }}
               >
                 {cryptoRoutes.routes.map(menuItemNavGenerator)}
               </Menu>
               <Button
-                onClick={(event: React.MouseEvent<HTMLElement> ) => {handleOpenUserMenu(event, setAnchorElGames)}}
+                onClick={(event: React.MouseEvent<HTMLElement>) => {
+                  handleOpenUserMenu(event, setAnchorElGames);
+                }}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
                 {gamesToolRoutes.name}
@@ -135,7 +163,9 @@ const NavBar = () => {
                 keepMounted
                 anchorEl={anchorElGames}
                 open={Boolean(anchorElGames)}
-                onClose={(event: React.MouseEvent<HTMLElement> ) => {handleCloseNavMenu(setAnchorElGames)}}
+                onClose={(event: React.MouseEvent<HTMLElement>) => {
+                  handleCloseNavMenu(setAnchorElGames);
+                }}
               >
                 {gamesToolRoutes.routes.map(menuItemNavGenerator)}
               </Menu>

@@ -18,7 +18,7 @@ ReactDOM.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-      <Header />
+        <Header />
         <Routes>
           {routes.map((route) => (
             <Route
@@ -28,7 +28,7 @@ ReactDOM.render(
             />
           ))}
         </Routes>
-      <Footer />
+        <Footer />
       </BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>,

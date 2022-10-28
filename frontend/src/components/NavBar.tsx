@@ -17,6 +17,7 @@ import {
   gamesToolRoutes,
   homeRoute,
   expensesTracker,
+  guessTheSong,
   otherProjects,
   routes,
 } from "../routes";
@@ -170,6 +171,7 @@ const NavBar = () => {
                 {gamesToolRoutes.routes.map(menuItemNavGenerator)}
               </Menu>
               {buttonNavGenerator(expensesTracker)}
+              {buttonNavGenerator(guessTheSong)}
               {buttonNavGenerator(otherProjects)}
             </Box>
           </Toolbar>

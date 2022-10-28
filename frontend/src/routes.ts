@@ -4,6 +4,7 @@ import {
   LunaBot,
   CryptoTracker,
   ExpenseManager,
+  GuessTheSong,
   OtherProjects,
 } from "./pages";
 
@@ -34,12 +35,19 @@ export const otherProjects = {
   element: OtherProjects,
 };
 
+export const guessTheSong = {
+  name: 'Guess The Song',
+  path: '/guess-the-song',
+  element: GuessTheSong,
+};
+
 export const routes = [
   homeRoute,
   loisDesNormsRoute,
   expensesTracker,
   cryptoTracker,
   lunaBot,
+  guessTheSong,
   otherProjects,
 ];
 

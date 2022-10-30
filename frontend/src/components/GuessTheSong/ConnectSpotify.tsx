@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
 
 const SPOTIFY_CLIENT_ID = '8ad1f30ed686473cb11eb34ce677c3fe';
 
@@ -31,10 +31,10 @@ const ConnectSpotify = () => {
 
   };
 
-  return (<div>
+  return (<Stack>
     <Typography variant="h4" align="center">Connect Spotify</Typography>
     <Button variant="outlined" onClick={onConnectClick}>Connect</Button>
-  </div>);
+  </Stack>);
 };
 
 export default ConnectSpotify;

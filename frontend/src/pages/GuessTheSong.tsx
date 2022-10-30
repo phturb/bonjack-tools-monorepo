@@ -4,7 +4,7 @@ import GuessingComponent from '../components/GuessTheSong/GuessingComponent';
 import SpotifyWebApi from 'spotify-web-api-js';
 import { useLocation } from 'react-router-dom';
 import GuessingPlaylistSelector from '../components/GuessTheSong/GuessingPlaylistSelector';
-import { Button, Container, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Grid, Paper, Stack, Typography } from '@mui/material';
 
 const GuessTheSong = () => {
   const [spotifyApi, setSpotifyApi] = useState(new SpotifyWebApi());
@@ -33,12 +33,8 @@ const GuessTheSong = () => {
   const guessingComponentSelector = () => {
     return (<>
       {playlistId
-        ? <Stack><GuessingComponent spotifyApi={spotifyApi} playlistId={playlistId} />
-          <Grid container alignItems="center" direction="row" justifyContent="flex-end">
-            <Grid item xs={3}>
-              <Button onClick={resetPlaylist} variant="outlined">Reset playlist</Button>
-            </Grid>
-          </Grid>
+        ? <Stack>
+          <GuessingComponent spotifyApi={spotifyApi} playlistId={playlistId} updatePlaylistId={setPlaylistId}/>
         </Stack>
         : <GuessingPlaylistSelector spotifyApi={spotifyApi} updatePlaylistId={setPlaylistId} />}
     </>)
@@ -46,11 +42,13 @@ const GuessTheSong = () => {
 
   return (<Container>
     <Typography variant="h4" component="h4" align="center">Guess the Song</Typography>
-    <Paper>
+    <Box sx={{display: 'flex', justifyContent: "center", alignItems: "center"}}>
+    <Paper sx={{width: 320, padding: 2}}>
       {!spotifyApi.getAccessToken()
         ? <ConnectSpotify />
         : guessingComponentSelector()}
     </Paper>
+    </Box>
   </Container>);
 };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Autocomplete, Avatar, Box, Button, Grid, Slider, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Avatar, Box, Button, Grid, Skeleton, Slider, Stack, TextField, Typography } from '@mui/material';
 import SpotifyWebApi from 'spotify-web-api-js';
 import GuessedSongs from './GuessedSongs';
 import { green, red } from '@mui/material/colors';
@@ -7,6 +7,7 @@ import { green, red } from '@mui/material/colors';
 interface GuessingComponentProps {
   spotifyApi: SpotifyWebApi.SpotifyWebApiJs,
   playlistId: string,
+  updatePlaylistId: (playlistId: string) => void
 }
 
 const GUESS_STAGES = [1, 2, 5, 7, 11, 16, -1];
@@ -27,6 +28,7 @@ const GuessingComponent = (props: GuessingComponentProps) => {
   const [errorList, setErrorList] = useState<Error[]>([]);
   const [currentSongTime, setCurrentSongTime] = useState<number>(0);
   const [guessError, setGuessError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const selectRandomTrack = (tracks: SpotifyApi.PlaylistTrackObject[]): [SpotifyApi.PlaylistTrackObject | undefined, number] => {
     if (tracks.length <= 0) {
@@ -36,41 +38,38 @@ const GuessingComponent = (props: GuessingComponentProps) => {
     return [tracks[index], index];
   };
 
+  const populatePlaylist = async (playlistId: string) => {
+    let offset = 0;
+    let tracks: SpotifyApi.PlaylistTrackObject[] = [];
+    try {
+      let result = await props.spotifyApi.getPlaylistTracks(playlistId, { offset: offset });
+      offset += result.limit;
+      while(offset < result.total) {
+        result = await props.spotifyApi.getPlaylistTracks(playlistId, { offset: offset });
+        tracks = tracks.concat(result.items);
+        offset += result.limit;
+      }
+    } finally {
+      let playlistTracksCopy: SpotifyApi.PlaylistTrackObject[]  = [];
+      tracks.forEach((t) => { playlistTracksCopy.push(t)});
+      setPlaylistTracks(playlistTracksCopy);
+      setPlayedTracks([]);
+      const [nextTrack, nextTrackIndex] = selectRandomTrack(tracks); 
+      setCurrentlyPlayingTrack(nextTrack);
+      playlistTracksCopy = [];
+      tracks.forEach((t) => { playlistTracksCopy.push(t)});
+      playlistTracksCopy.splice(nextTrackIndex);
+      setNotPlayedTracks(playlistTracksCopy);
+    }
+  }
+
   useEffect(() => {
     setPlayedTracks([]);
-    const callbackPlaylist = (tracks: SpotifyApi.PlaylistTrackObject[], callOffset: number) => {
-      props.spotifyApi.getPlaylistTracks(props.playlistId, { offset: callOffset }, (err, result) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        const offset = result.offset + result.limit;
-        tracks = tracks.concat(result.items);
-        const playlistTracksCopy: SpotifyApi.PlaylistTrackObject[] = [];
-        tracks.forEach(t => playlistTracksCopy.push(t));
-        setPlaylistTracks(playlistTracksCopy);
-        setNotPlayedTracks(tracks);
-        if (offset < result.total) {
-          callbackPlaylist(tracks, offset);
-        } else {
-          const [trackToPlay, trackIndex] = selectRandomTrack(tracks);
-          if (trackToPlay && trackIndex >= 0) {
-            setCurrentlyPlayingTrack(trackToPlay);
-            tracks.splice(trackIndex, 1);
-            setNotPlayedTracks(tracks);
-          }
-        }
-      });
-    };
-    props.spotifyApi.getPlaylist(props.playlistId, {}, (err, result) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      const tracks: SpotifyApi.PlaylistTrackObject[] = [];
-      callbackPlaylist(tracks, 0);
+    populatePlaylist(props.playlistId);
+    props.spotifyApi.getPlaylist(props.playlistId, {}).then((result) => {
       setCurrentPlaylist(result);
-    });
+      return populatePlaylist(props.playlistId);
+    }).catch((err) => { console.error(err) }).finally(() => { setIsLoading(false) });
   }, [props.playlistId, props.spotifyApi]);
 
   const onTrackStart = (guessStage: number) => {
@@ -88,22 +87,14 @@ const GuessingComponent = (props: GuessingComponentProps) => {
         props.spotifyApi.getMyCurrentPlaybackState({}, (err, result) => {
           setCurrentSongTime(result?.progress_ms ?? 0);
           if (err || !result.is_playing || !result?.progress_ms || result.progress_ms > GUESS_STAGES[guessStage] * 1000) {
-            props.spotifyApi.pause({}, (err) => {
-              if (err) {
-                return;
-              }
-              props.spotifyApi.seek(0, {}, (err) => {
-                if (err) {
-                  return;
-                }
-                props.spotifyApi.getMyCurrentPlaybackState({}, (err, result) => {
-                  if (err) {
-                    return;
-                  }
-                  setCurrentSongTime(result?.progress_ms ?? 0);
-                })
-              });
-            });
+            props.spotifyApi.pause({}).then(() => {
+              return props.spotifyApi.seek(0, {});
+            }).then(() => {
+              setCurrentSongTime(0);
+              return props.spotifyApi.getMyCurrentPlaybackState({});
+            }).then((result) => {
+              setCurrentSongTime(result?.progress_ms ?? 0);
+            }).catch((err) => { console.error(err); });
             if (intervalId) {
               clearInterval(intervalId);
             }
@@ -114,11 +105,9 @@ const GuessingComponent = (props: GuessingComponentProps) => {
       }, INTERVAL_TIME);
       setIntervalId(newIntervalId);
     }
-    props.spotifyApi.getMyCurrentPlayingTrack({}, (err, result) => {
-      if (!err) {
-        setCurrentSong(result.item?.name);
-      }
-    });
+    props.spotifyApi.getMyCurrentPlayingTrack({}).then((result) => {
+      setCurrentSong(result.item?.name);
+    }).catch((err) => { console.error(err); });
   };
 
   const onNextClick = () => {
@@ -128,17 +117,15 @@ const GuessingComponent = (props: GuessingComponentProps) => {
     } else {
       setCurrentGuessStage(newGuessStage);
     }
-    props.spotifyApi.seek(0, {}, (err) => {
-      if (!currentlyPlayingTrack) {
-        console.error("NO PLAYING TRACK");
-        return;
-      }
-      props.spotifyApi.play({ uris: [currentlyPlayingTrack?.track.uri] }, (err) => {
-        if (!err) {
-          onTrackStart(newGuessStage);
-        }
-      });
-    });
+    if (!currentlyPlayingTrack) {
+      console.error("NO PLAYING TRACK");
+      return;
+    }
+    props.spotifyApi.seek(0, {}).then(() => {
+      return props.spotifyApi.play({ uris: [currentlyPlayingTrack?.track.uri] });
+    }).then(() => {
+        onTrackStart(newGuessStage);
+    }).catch((err) => { console.error(err); });
   };
 
   const goToNextTrack = () => {
@@ -152,13 +139,13 @@ const GuessingComponent = (props: GuessingComponentProps) => {
       console.error("NO NEXT TRACK");
       return;
     }
-    props.spotifyApi.play({ uris: [nextTrack?.track.uri] }, (err) => {
-      props.spotifyApi.pause();
+    props.spotifyApi.play({ uris: [nextTrack?.track.uri] }).then(() => {
+      props.spotifyApi.pause().catch((err) => { console.error(err); });
 
       setCurrentlyPlayingTrack(nextTrack);
       notPlayedTracks.splice(nextTrackIndex);
       setNotPlayedTracks(notPlayedTracks);
-    });
+    }).catch((err) => { console.error(err); });
   }
 
   const onSkipClick = () => {
@@ -170,17 +157,15 @@ const GuessingComponent = (props: GuessingComponentProps) => {
   };
 
   const onPlayClick = () => {
-    props.spotifyApi.seek(0, {}, (err) => {
-      if (!currentlyPlayingTrack) {
-        console.error("NO PLAYING TRACK");
-        return;
-      }
-      props.spotifyApi.play({ uris: [currentlyPlayingTrack?.track.uri] }, (err) => {
-        if (!err) {
-          onTrackStart(currentGuessStage);
-        }
-      });
-    });
+    if (!currentlyPlayingTrack) {
+      console.error("NO PLAYING TRACK");
+      return;
+    }
+    props.spotifyApi.seek(0, {}).then(() => {
+      return props.spotifyApi.play({ uris: [currentlyPlayingTrack?.track.uri] });
+    }).then(() => {
+        onTrackStart(currentGuessStage);
+    }).catch((err) => { console.error(err); });
   };
 
   const onGuessInputSubmitClick = () => {
@@ -206,7 +191,7 @@ const GuessingComponent = (props: GuessingComponentProps) => {
     };
   }, []);
 
-  return (<Stack spacing={2} alignItems="center" justifyContent="center">
+  const loadedComponent = () => (<Stack spacing={2} alignItems="center" justifyContent="center">
     <Typography variant="h5">{currentPlaylist ? currentPlaylist.name : "No Playlist"}</Typography>
     <Stack direction="row" spacing={4} alignItems="center" justifyContent="center">
       {GUESS_STAGES.map((stage, i) => {
@@ -218,48 +203,62 @@ const GuessingComponent = (props: GuessingComponentProps) => {
         } else {
           param = {};
         }
-        if (stage < 0) {
-          return <Avatar key={stage} {...param}>∞</Avatar>;
+        if (i >= currentGuessStage - 1 && i <= currentGuessStage + 1) {
+          if (stage < 0) {
+            return <Avatar key={stage} {...param}>∞</Avatar>;
+          } else {
+            return <Avatar key={stage} {...param}>{stage}s</Avatar>;
+          }
         } else {
-          return <Avatar key={stage} {...param}>{stage}s</Avatar>;
+          return <></>;
         }
       })}
     </Stack>
     <Button onClick={onPlayClick} disabled={currentSongTime > 0}>Play</Button>
-    <Box width={350}>
-    <Slider aria-label="song-progress-indicator" size="small" value={currentSongTime / 1000} min={0} max={GUESS_STAGES[currentGuessStage]} disabled={GUESS_STAGES[currentGuessStage] >= 0} />
-    </Box>
+    <Slider
+      sx={{width:250}} 
+      aria-label="song-progress-indicator"
+      size="small"
+      value={currentSongTime / 1000}
+      min={0}
+      max={GUESS_STAGES[currentGuessStage]}
+      disabled/>
     {songWasGuessed || currentGuessStage >= (GUESS_STAGES.length - 1)
       ?
       <Button onClick={onSkipClick}>Skip</Button>
       :
       <>
-        <Grid container direction="row" justifyContent="center" alignItems="center" spacing={2}>
-          <Grid item xs={6}>
-            <Autocomplete
-              fullWidth
-              value={currentGuessInput}
-              onChange={(event: any, newValue: string | null) => {
-                      setCurrentGuessInput(newValue ?? "");
-              }}
-              onInputChange={(event: any, newValue: string | null) => {
-                setCurrentGuessInput(newValue ?? "");
-              }}
-              freeSolo options={playlistTracks.map((entry) => entry.track.name)} renderInput={(params) => <TextField {...params}
-                disabled={songWasGuessed}
-                helperText={guessError}
-                error={guessError.length > 0}
-                label="Guess" />}
-            />
-          </Grid>
-          <Grid item xs={2}>
-            <Button onClick={onGuessInputSubmitClick}>Submit guess</Button>
-          </Grid>
-        </Grid>
+        <Stack direction="row" justifyContent="center" alignItems="center" spacing={2}>
+          <Autocomplete
+            fullWidth
+            sx={{width: 230}}
+            value={currentGuessInput}
+            onChange={(event: any, newValue: string | null) => {
+              setCurrentGuessInput(newValue ?? "");
+            }}
+            onInputChange={(event: any, newValue: string | null) => {
+              setCurrentGuessInput(newValue ?? "");
+            }}
+            freeSolo options={playlistTracks.map((entry) => entry.track.name)} renderInput={(params) => <TextField {...params}
+              disabled={songWasGuessed}
+              helperText={guessError}
+              error={guessError.length > 0}
+              label="Guess" />}
+          />
+          <Button variant="outlined" onClick={onGuessInputSubmitClick}>Guess</Button>
+        </Stack>
         <Button onClick={onNextClick}>Next</Button>
       </>}
     <GuessedSongs guessedSongs={playedTracks} />
+    <Button onClick={() => { props.updatePlaylistId(""); }}>Reset Playlist</Button>
   </Stack>);
+
+  return isLoading ? <Box sx={{width: "100%"}}>
+      <Skeleton variant="text" width={"100%"} sx={{ fontSize: '1rem'}} animation="wave" />
+      <Skeleton variant="circular" width={40} height={40} animation="wave" />
+      <Skeleton variant="rectangular" width={"100%"} height={200} animation="wave" />
+    </Box>
+    : loadedComponent();
 };
 
 export default GuessingComponent;

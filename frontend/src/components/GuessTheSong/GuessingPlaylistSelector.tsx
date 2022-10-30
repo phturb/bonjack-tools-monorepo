@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Button, Grid, TextField } from '@mui/material';
+import { Button, Grid, TextField, Typography } from '@mui/material';
 import SpotifyWebApi from 'spotify-web-api-js';
+import { Stack } from '@mui/system';
 
 interface GuessingPlaylistSelectorProps {
   spotifyApi: SpotifyWebApi.SpotifyWebApiJs,
@@ -34,14 +35,13 @@ const GuessingPlaylistSelector = (props: GuessingPlaylistSelectorProps) => {
       const playlistId = playlistIdParser(localPlaylistId);
       console.log(playlistId);
       setIsLoading(true);
-      props.spotifyApi.getPlaylist(playlistId, {}, (err, result) => {
+      props.spotifyApi.getPlaylist(playlistId, {}).then((result) => {
+        setCurrentErrorMessage("");
+        props.updatePlaylistId(playlistId);
+      }).catch((err) => {
+        setCurrentErrorMessage(err.response);
+      }).finally(() => {
         setIsLoading(false);
-        if (!err) {
-          setCurrentErrorMessage("");
-          props.updatePlaylistId(playlistId);
-        } else {
-          setCurrentErrorMessage(err.response);
-        }
       });
     } else {
       setIsLoading(false);
@@ -49,14 +49,14 @@ const GuessingPlaylistSelector = (props: GuessingPlaylistSelectorProps) => {
     }
   };
 
-  return (<Grid container alignItems="center" justifyContent="center" justifyItems="center" spacing={2}>
-    <Grid item xs={8}>
+  return (
+  <Stack alignItems="center" spacing={1}>
+    <Typography variant="subtitle1" align="center">Enter the playlist id that you want to use</Typography>
+    <Stack direction="row" spacing={1}>
       <TextField fullWidth error={currentErrorMessage.length > 0} helperText={currentErrorMessage} variant="standard" label="PlaylistId" onChange={onChange} />
-    </Grid>
-    <Grid item xs={2}>
       <Button onClick={onSubmit} >Submit</Button>
-    </Grid>
-  </Grid>)
+    </Stack>
+  </Stack>)
 };
 
 export default GuessingPlaylistSelector;

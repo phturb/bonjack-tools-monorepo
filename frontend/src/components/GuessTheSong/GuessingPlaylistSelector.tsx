@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Grid, TextField, Typography } from '@mui/material';
+import { Button, TextField, Typography } from '@mui/material';
 import SpotifyWebApi from 'spotify-web-api-js';
 import { Stack } from '@mui/system';
 
@@ -11,9 +11,7 @@ interface GuessingPlaylistSelectorProps {
 const playlistIdParser = (playlistId: string) => {
   if (playlistId.startsWith("http")) {
     const paramRemoved = playlistId.split("?")[0];
-    console.log(paramRemoved);
     const splitUrl = paramRemoved.split("/");
-    console.log(splitUrl);
     return splitUrl[splitUrl.length - 1];
   } else {
     return playlistId;

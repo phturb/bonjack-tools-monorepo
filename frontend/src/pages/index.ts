@@ -13,6 +13,5 @@ export {
   CryptoTracker,
   ExpenseManager,
   OtherProjects,
-  GuessTheSong
+  GuessTheSong,
 };
-

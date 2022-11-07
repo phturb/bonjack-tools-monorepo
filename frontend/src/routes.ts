@@ -36,8 +36,8 @@ export const otherProjects = {
 };
 
 export const guessTheSong = {
-  name: 'Guess The Song',
-  path: '/guess-the-song',
+  name: "Guess The Song",
+  path: "/guess-the-song",
   element: GuessTheSong,
 };
 

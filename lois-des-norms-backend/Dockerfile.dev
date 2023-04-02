@@ -1,9 +1,0 @@
-FROM node:alpine
-WORKDIR /app
-RUN npm install -g typescript ts-node
-COPY package*.json ./
-RUN npm i
-COPY ./ ./
-RUN npx prisma generate
-USER node
-CMD ["npm", "run", "dev"]

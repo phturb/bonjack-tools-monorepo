@@ -1,0 +1,6 @@
+[submodule "bonjack-tools-website-v2"]
+	path = bonjack-tools-website-v2
+	url = git@github.com:phturb/bonjack-tools-website-v2.git
+[submodule "bonjack-tools-backend"]
+	path = bonjack-tools-backend
+	url = git@github.com:phturb/bonjack-tools-backend.git

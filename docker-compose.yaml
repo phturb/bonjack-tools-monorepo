@@ -4,7 +4,7 @@ services:
   frontend:
     container_name: frontend
     build:
-      context: ./frontend/
+      context: ./bonjack-tools-website-v2/
       dockerfile: Dockerfile
     volumes:
       - /app/node_modules
@@ -13,10 +13,10 @@ services:
     environment:
       - REACT_APP_WEBSOCKET_ENDPOINT="wss://${DOMAIN}/ws"
       - REACT_APP_HTTP_ENDPOINT="https://${DOMAIN}/api"
-  lois-des-norms-backend:
-    container_name: lois-des-norms-backend
+  backend:
+    container_name: backend
     build:
-      context: ./lois-des-norms-backend/
+      context: ./bonjack-tools-backend/
       dockerfile: Dockerfile
     volumes:
       - /app/node_modules
@@ -29,15 +29,3 @@ services:
       - TEXT_CHANNEL_ID=212369747973636097
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - DATABASE_URL=file:/data/ldn-prod.db
-  expense-manager-backend:
-    container_name: expense-manager-backend
-    build:
-      context: ./expense-manager-backend
-      dockerfile: Dockerfile
-    ports:
-      - 3030:3030
-    volumes:
-        - ./data:/data
-    environment:
-      - DATABASE_PATH=/data/em-prod.db
-      - PORT=3030

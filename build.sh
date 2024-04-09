@@ -8,7 +8,6 @@ rm release.tar.gz
 cd ./bonjack-tools-backend
 echo "Building backend server ..."
 npm install
-npx prisma migrate dev --name build-server
 npx prisma generate
 npm run build
 cd ..
@@ -25,11 +24,14 @@ cd ..
 
 mkdir ./build
 mkdir ./build/backend
+mkdir ./build/backend/prisma
 mkdir ./build/frontend
 
 echo "Copy backend server to build/backend"
 cp -r ./bonjack-tools-backend/dist ./build/backend/dist
 cp ./bonjack-tools-backend/package.json ./build/backend/package.json
+cp ./bonjack-tools-backend/package-lock.json ./build/backend/package-lock.json
+cp ./bonjack-tools-backend/prisma/schema.prisma ./build/backend/prisma/schema.prisma
 
 echo "Copy frontend to build/frontend"
 cp -r ./bonjack-tools-website-v2/build/. ./build/frontend

@@ -14,15 +14,15 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
       - REACT_APP_WEBSOCKET_ENDPOINT="ws://localhost:3001/"
-      - REACT_APP_HTTP_ENDPOINT="https://tools.bonjack.club/api"
+      - REACT_APP_HTTP_ENDPOINT="http://localhost:3001/api"
   backend:
     container_name: backend
     build:
       context: ./bonjack-tools-backend/
       dockerfile: Dockerfile.dev
     volumes:
-      - ./bonjack-tools-backend/:/app
-      - /app/node_modules
+      - ./bonjack-tools-backend/:/usr/app
+      - /usr/app/node_modules
     ports:
       - 3001:3001
     environment:
@@ -30,5 +30,6 @@ services:
       - CHANNEL_ID=212369829582077953
       - TEXT_CHANNEL_ID=212369747973636097
       - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - DATABASE_URL=file:/app/dev.db
+      - DATABASE_URL=file:/usr/app/dev.db?connection_limit=1
+      - RIOT_API_KEY=${RIOT_API_KEY}
 

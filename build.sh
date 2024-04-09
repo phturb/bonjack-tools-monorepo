@@ -9,6 +9,7 @@ cd ./bonjack-tools-backend
 echo "Building backend server ..."
 npm install
 npx prisma migrate dev --name build-server
+npx prisma generate
 npm run build
 cd ..
 

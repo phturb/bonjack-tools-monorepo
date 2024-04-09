@@ -28,4 +28,5 @@ services:
       - CHANNEL_ID=212369829582077953
       - TEXT_CHANNEL_ID=212369747973636097
       - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - DATABASE_URL=file:/data/ldn-prod.db
+      - DATABASE_URL=file:/data/ldn-prod.db?connection_limit=1
+      - RIOT_API_KEY=${RIOT_API_KEY}

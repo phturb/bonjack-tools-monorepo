@@ -2,7 +2,6 @@
 
 domain=tools.bonjack.club
 ldnappuser=nodeapp
-emappuser=goapp
 runnergroup=apprunner
 
 user_exists(){ id "$1" &>/dev/null; }
@@ -10,7 +9,6 @@ user_exists(){ id "$1" &>/dev/null; }
 echo "Create necessary directories ..."
 sudo mkdir -p /opt/app
 sudo mkdir -p /opt/app/ldn-backend
-sudo mkdir -p /opt/app/em-backend
 sudo mkdir -p /var/www/$domain
 sudo mkdir -p /etc/supervisor/conf.d/
 sudo mkdir -p /opt/db
@@ -18,9 +16,7 @@ sudo mkdir -p /opt/db
 echo "Clearning directorires ..."
 sudo rm -rf /var/www/$domain/html
 sudo rm -rf /opt/app/ldn-backend
-sudo rm -rf /opt/app/em-backend
 sudo rm -f /etc/supervisor/conf.d/ldn-backend.conf
-sudo rm -f /etc/supervisor/conf.d/em-backend.conf
 sudo rm -f /opt/db/ldn-dev.db
 
 "Echo verify if user $ldnappuser exist ..."
@@ -30,15 +26,6 @@ else
     echo "Create appuser"
     sudo useradd -m -d /home/$ldnappuser $ldnappuser
     sudo chown -R $ldnappuser:$ldnappuser /opt/app/ldn-backend
-fi
-
-echo "Verify if user $emappuser exist ..."
-if user_exists $emappuser; code=$?; then
-    echo "User : $emappuser exist"
-else
-    echo "Create $emappuser"
-    sudo useradd -m -d /home/$emappuser $emappuser
-    sudo chown -R $emappuser:$emappuser /opt/app/em-backend
 fi
 
 echo "Verify if usergroup apprunner exist ..."
@@ -64,9 +51,6 @@ fi
 echo "Creating superviosr config ..."
 sed "s/{{APPUSER}}/$ldnappuser/g" supervisor.ldn-backend.conf > ldn-backend.conf
 sudo mv -f ldn-backend.conf /etc/supervisor/conf.d/ldn-backend.conf
-
-sed "s/{{APPUSER}}/$emappuser/g" supervisor.em-backend.conf > em-backend.conf
-sudo mv -f em-backend.conf /etc/supervisor/conf.d/em-backend.conf
 
 echo "Creating nginx config ..."
 echo "Adding domain $domain in nginx config"

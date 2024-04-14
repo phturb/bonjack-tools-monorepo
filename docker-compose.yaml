@@ -13,6 +13,9 @@ services:
     environment:
       - REACT_APP_WEBSOCKET_ENDPOINT="wss://${DOMAIN}/ws"
       - REACT_APP_HTTP_ENDPOINT="https://${DOMAIN}/api"
+      - REACT_APP_AUTH0_DOMAIN=${REACT_APP_AUTH0_DOMAIN}
+      - REACT_APP_AUTH0_CLIENT_ID=${REACT_APP_AUTH0_CLIENT_ID}
+      - REACT_APP_AUTH0_AUDIENCE=${AUDIENCE}
   backend:
     container_name: backend
     build:
@@ -30,3 +33,5 @@ services:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - DATABASE_URL=file:/data/ldn-prod.db?connection_limit=1
       - RIOT_API_KEY=${RIOT_API_KEY}
+      - ISSUER_BASE_URL=${ISSUER_BASE_URL}
+      - AUDIENCE=${AUDIENCE}

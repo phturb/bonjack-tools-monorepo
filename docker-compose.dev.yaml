@@ -12,9 +12,13 @@ services:
     ports:
       - 3000:3000
     environment:
+      - PORT=3000
       - CHOKIDAR_USEPOLLING=true
       - REACT_APP_WEBSOCKET_ENDPOINT="ws://localhost:3001/"
       - REACT_APP_HTTP_ENDPOINT="http://localhost:3001/api"
+      - REACT_APP_AUTH0_DOMAIN=${REACT_APP_AUTH0_DOMAIN}
+      - REACT_APP_AUTH0_CLIENT_ID=${REACT_APP_AUTH0_CLIENT_ID}
+      - REACT_APP_AUTH0_AUDIENCE=${AUDIENCE}
   backend:
     container_name: backend
     build:
@@ -32,4 +36,6 @@ services:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - DATABASE_URL=file:/usr/app/dev.db?connection_limit=1
       - RIOT_API_KEY=${RIOT_API_KEY}
+      - ISSUER_BASE_URL=${ISSUER_BASE_URL}
+      - AUDIENCE=${AUDIENCE}
 
